@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test VAPID Key</title>
+</head>
+<body>
+  <h1>Test VAPID Configuration</h1>
+  <pre id="output"></pre>
+  
+  <script type="module">
+    const output = document.getElementById('output');
+    
+    const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+    
+    output.textContent = `
+VAPID Key Check:
+================
+
+Key exists: ${!!vapidKey}
+Key value: ${vapidKey || 'NOT FOUND'}
+Key length: ${vapidKey ? vapidKey.length : 0}
+Expected length: 87 or 88 (both valid)
+
+Status: ${vapidKey && (vapidKey.length === 87 || vapidKey.length === 88) ? '✅ OK' : '❌ INVALID'}
+
+All env vars starting with VITE_:
+${JSON.stringify(import.meta.env, null, 2)}
+    `;
+  </script>
+</body>
+</html>

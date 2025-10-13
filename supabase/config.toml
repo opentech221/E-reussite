@@ -1,0 +1,5 @@
+# Configuration pour l'Edge Function redirect-and-track
+# Cette fonction doit accepter les requêtes anonymes (liens publics)
+
+[functions.redirect-and-track]
+verify_jwt = false
