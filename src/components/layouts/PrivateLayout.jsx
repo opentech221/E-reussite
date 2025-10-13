@@ -18,7 +18,8 @@ function Breadcrumb() {
     'badges': 'Badges',
     'chatbot': 'Chatbot',
     'exam': 'Exam',
-    'my-shared-links': 'Mes Liens de Partage'
+    'my-shared-links': 'Mes Liens de Partage',
+    'payment': 'Paiement'
   };
 
   // Mapping des URLs vers des liens de redirection

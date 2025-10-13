@@ -129,13 +129,14 @@ const CoursesPublic = () => {
   return (
     <>
       <Helmet>
-        <title>Nos Cours - E-Réussite | BFEM & BAC</title>
-        <meta name="description" content="Découvrez nos cours complets pour préparer le BFEM et le BAC. Mathématiques, Sciences, Lettres et plus encore." />
+        <title>Nos Cours - BFEM & BAC | E-Réussite</title>
+        <meta name="description" content="Découvrez tous nos cours BFEM et BAC. Mathématiques, Sciences, Lettres. Accès complet pour 1000 FCFA seulement." />
+        <meta name="keywords" content="cours BFEM, cours BAC, Mathématiques Sénégal, Sciences, 1000 FCFA, orientation scolaire" />
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 via-green-50/20 to-white dark:from-slate-900 dark:via-green-900/10 dark:to-slate-900">
         {/* Hero Section */}
-        <section className="bg-gradient-to-r from-primary to-blue-600 text-white py-20">
+        <section className="bg-gradient-to-r from-green-600 via-emerald-600 to-green-600 dark:from-green-800 dark:via-emerald-800 dark:to-green-800 text-white py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -143,19 +144,30 @@ const CoursesPublic = () => {
               transition={{ duration: 0.5 }}
               className="text-center"
             >
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                Des cours de qualité pour réussir
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-heading mb-6">
+                Tous les cours dont vous avez besoin<br />
+                <span className="text-green-200">pour réussir votre examen</span>
               </h1>
-              <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-                Programmes BFEM et BAC conformes au curriculum sénégalais
+              <p className="text-xl md:text-2xl text-green-100 mb-8 max-w-3xl mx-auto leading-relaxed">
+                Programmes BFEM et BAC conformes au curriculum officiel sénégalais.<br />
+                <span className="font-semibold">Seulement 1000 FCFA pour un accès à vie !</span>
               </p>
             </motion.div>
           </div>
         </section>
 
         {/* Features Section */}
-        <section className="py-12 bg-white">
+        <section className="py-16 bg-white dark:bg-slate-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold font-heading text-slate-900 dark:text-white mb-4">
+                Tout ce qu'il faut pour réussir
+              </h2>
+              <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+                Une plateforme complète pensée pour votre succès académique
+              </p>
+            </div>
+            
             <div className="grid md:grid-cols-3 gap-8">
               {features.map((feature, index) => (
                 <motion.div
@@ -163,13 +175,13 @@ const CoursesPublic = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="text-center"
+                  className="text-center p-6 rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 hover:border-green-300 dark:hover:border-green-700 transition-all duration-300 hover:shadow-xl"
                 >
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-                    <feature.icon className="w-8 h-8 text-primary" />
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 mb-4 shadow-lg">
+                    <feature.icon className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-slate-600">{feature.description}</p>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{feature.title}</h3>
+                  <p className="text-slate-600 dark:text-slate-300">{feature.description}</p>
                 </motion.div>
               ))}
             </div>
@@ -246,7 +258,7 @@ const CoursesPublic = () => {
         </section>
 
         {/* CTA Section */}
-        <section id="cta-section" className="py-20 bg-gradient-to-r from-primary to-blue-600">
+        <section id="cta-section" className="py-20 bg-gradient-to-r from-green-600 via-emerald-600 to-green-600 dark:from-green-800 dark:via-emerald-800 dark:to-green-800">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -254,33 +266,47 @@ const CoursesPublic = () => {
               viewport={{ once: true }}
               className="space-y-6"
             >
-              <Lock className="w-16 h-16 text-white/90 mx-auto" />
-              <h2 className="text-3xl md:text-4xl font-bold text-white">
-                Accédez à tous nos cours dès maintenant
+              <div className="inline-flex p-4 rounded-full bg-white/10 backdrop-blur-sm mb-4">
+                <Lock className="w-12 h-12 text-white" />
+              </div>
+              
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold font-heading text-white">
+                Testez gratuitement 7 jours<br />puis 1000 FCFA pour tout débloquer
               </h2>
-              <p className="text-xl text-blue-100 max-w-2xl mx-auto">
-                Créez votre compte gratuit pour commencer à apprendre et suivre votre progression
+              
+              <p className="text-xl md:text-2xl text-green-100 max-w-2xl mx-auto leading-relaxed">
+                <span className="font-bold">Essai gratuit sans engagement.</span> Puis inscription unique de 1000 FCFA.<br />
+                Accès illimité à vie : tous les cours BFEM et BAC + Coach IA personnalisé 24h/24
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                <Link to="/signup">
-                  <Button size="lg" variant="secondary" className="text-lg px-8">
-                    Créer un compte gratuit
-                    <ArrowRight className="ml-2 w-5 h-5" />
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
+                <Link to="/pricing">
+                  <Button size="lg" variant="secondary" className="text-lg px-10 py-7 font-bold shadow-2xl hover:scale-105 transition-transform">
+                    Essayer gratuitement 7 jours
+                    <ArrowRight className="ml-2 w-6 h-6" />
                   </Button>
                 </Link>
                 <Link to="/login">
-                  <Button size="lg" variant="outline" className="text-lg px-8 bg-white/10 text-white border-white/30 hover:bg-white/20">
-                    Se connecter
+                  <Button size="lg" variant="outline" className="text-lg px-10 py-7 font-semibold bg-white/10 text-white border-white/30 hover:bg-white/20 backdrop-blur-sm">
+                    Déjà inscrit ? Se connecter
                   </Button>
                 </Link>
               </div>
 
-              <p className="text-sm text-blue-100 pt-4">
-                ✓ Accès gratuit à tous les cours &nbsp;&nbsp;
-                ✓ Quiz illimités &nbsp;&nbsp;
-                ✓ Suivi de progression
-              </p>
+              <div className="grid sm:grid-cols-3 gap-4 pt-8 max-w-2xl mx-auto">
+                <div className="text-white bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                  <CheckCircle className="w-6 h-6 mx-auto mb-2 text-green-200" />
+                  <p className="text-sm font-semibold">Essai 7 jours gratuit</p>
+                </div>
+                <div className="text-white bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                  <CheckCircle className="w-6 h-6 mx-auto mb-2 text-green-200" />
+                  <p className="text-sm font-semibold">Puis 1000 FCFA unique</p>
+                </div>
+                <div className="text-white bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                  <CheckCircle className="w-6 h-6 mx-auto mb-2 text-green-200" />
+                  <p className="text-sm font-semibold">Accès à vie</p>
+                </div>
+              </div>
             </motion.div>
           </div>
         </section>

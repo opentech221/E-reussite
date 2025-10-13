@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
-import { User, Edit, BookOpen, ShoppingBag, Save, Crown, Calendar, Mail, GraduationCap, Award, Settings, CheckCircle2 } from 'lucide-react';
+import { User, Edit, BookOpen, Save, Crown, Calendar, Mail, GraduationCap, Award, Settings, CheckCircle2, CreditCard, Clock, CheckCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,15 +10,20 @@ import { supabase } from '@/lib/customSupabaseClient';
 import { useToast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useSubscription } from '@/hooks/useSubscription';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
-  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({ full_name: '', level: '', parcours: '' });
+  
+  // Hook pour gérer l'abonnement
+  const { subscription, loading: subscriptionLoading } = useSubscription();
 
   const fetchProfileData = async () => {
     if (user) {
@@ -44,24 +49,7 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      if (user) {
-        const { data: ordersData, error: ordersError } = await supabase
-          .from('orders')
-          .select('*, order_items(*, products(name))')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-
-        if (ordersError) {
-          toast({ title: 'Erreur de commandes', description: ordersError.message, variant: 'destructive' });
-        } else {
-          setOrders(ordersData);
-        }
-      }
-    };
-
     fetchProfileData();
-    fetchOrders();
   }, [user, toast]);
 
   const handleInputChange = (e) => {
@@ -104,6 +92,56 @@ const Profile = () => {
     return badges[subscription] || badges.free;
   };
 
+  /**
+   * Obtenir le badge d'abonnement basé sur le statut réel
+   */
+  const getSubscriptionStatus = () => {
+    if (!subscription || !subscription.has_subscription) {
+      return {
+        color: 'from-slate-400 to-slate-500',
+        icon: User,
+        label: 'Aucun abonnement',
+        status: 'none'
+      };
+    }
+
+    if (subscription.status === 'trial') {
+      return {
+        color: 'from-blue-400 to-cyan-500',
+        icon: Clock,
+        label: `Essai (${subscription.days_remaining} jours)`,
+        status: 'trial',
+        daysRemaining: subscription.days_remaining
+      };
+    }
+
+    if (subscription.status === 'active') {
+      return {
+        color: 'from-green-400 to-emerald-500',
+        icon: CheckCircle,
+        label: 'Accès illimité',
+        status: 'active',
+        paymentMethod: subscription.payment_method
+      };
+    }
+
+    if (subscription.status === 'expired') {
+      return {
+        color: 'from-red-400 to-orange-500',
+        icon: Clock,
+        label: 'Expiré',
+        status: 'expired'
+      };
+    }
+
+    return {
+      color: 'from-slate-400 to-slate-500',
+      icon: User,
+      label: 'Inactif',
+      status: 'inactive'
+    };
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-purple-50/30 to-slate-50">
@@ -126,7 +164,9 @@ const Profile = () => {
     );
   }
 
-  const subscriptionBadge = getSubscriptionBadge(profile.subscription);
+  // Utiliser le statut réel de l'abonnement
+  const subscriptionStatus = getSubscriptionStatus();
+  const subscriptionBadge = getSubscriptionBadge(profile?.subscription);
 
   return (
     <>
@@ -192,11 +232,19 @@ const Profile = () => {
                         <span>{user.email}</span>
                       </div>
                       
-                      {/* Badge abonnement */}
-                      <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r ${subscriptionBadge.color} text-white font-bold shadow-lg`}>
-                        <subscriptionBadge.icon className="w-5 h-5" />
-                        {subscriptionBadge.label}
-                      </div>
+                      {/* Badge abonnement réel basé sur subscription */}
+                      {!subscriptionLoading && (
+                        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r ${subscriptionStatus.color} text-white font-bold shadow-lg`}>
+                          <subscriptionStatus.icon className="w-5 h-5" />
+                          {subscriptionStatus.label}
+                        </div>
+                      )}
+                      {subscriptionLoading && (
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-400 text-white font-bold shadow-lg">
+                          <Clock className="w-5 h-5 animate-spin" />
+                          Chargement...
+                        </div>
+                      )}
                     </div>
                   </div>
                   
@@ -300,86 +348,147 @@ const Profile = () => {
                           <span className="text-slate-600 dark:text-slate-300 font-medium">Parcours</span>
                           <span className="font-bold text-slate-900 dark:text-white">{profile.parcours || 'Non défini'}</span>
                         </div>
-                        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl border-2 border-primary/20">
-                          <span className="text-slate-700 dark:text-slate-200 font-medium flex items-center gap-2">
-                            <Crown className="w-5 h-5 text-primary" />
-                            Abonnement
-                          </span>
-                          <span className="font-bold text-primary capitalize text-lg">{profile.subscription}</span>
-                        </div>
                       </div>
                     )}
                   </CardContent>
                 </Card>
 
-                {/* Historique des commandes */}
+                {/* Carte Abonnement */}
                 <Card className="border-2 border-slate-200 shadow-lg dark:bg-slate-800 dark:border-white/20 dark:shadow-[0_0_30px_rgba(255,255,255,0.4)] overflow-hidden">
-                  <CardHeader className="bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/20 dark:to-primary/20 border-b border-slate-200 dark:border-slate-700">
+                  <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10 dark:from-primary/20 dark:to-accent/20 border-b border-slate-200 dark:border-slate-700">
                     <CardTitle className="flex items-center gap-2 text-xl dark:text-white">
-                      <ShoppingBag className="w-6 h-6 text-accent" /> 
-                      Historique des commandes
-                      {orders.length > 0 && (
-                        <span className="ml-auto bg-accent text-white text-sm px-3 py-1 rounded-full font-bold">
-                          {orders.length}
-                        </span>
-                      )}
+                      <CreditCard className="w-6 h-6 text-primary" />
+                      Mon Abonnement
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6">
-                    {orders.length > 0 ? (
-                      <ul className="space-y-4">
-                        {orders.map((order, index) => (
-                          <motion.li 
-                            key={order.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className="p-5 border-2 border-slate-200 rounded-xl hover:border-primary/50 hover:shadow-lg transition-all bg-white"
-                          >
-                            <div className="flex justify-between items-start mb-3">
-                              <div>
-                                <p className="font-bold text-lg text-slate-900 dark:text-white">
-                                  Commande #{order.id.substring(0, 8)}
-                                </p>
-                                <p className="text-sm text-slate-500 flex items-center gap-2 mt-1">
-                                  <Calendar className="w-4 h-4" />
-                                  {new Date(order.created_at).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
-                                </p>
-                              </div>
-                              <div className="text-right">
-                                <p className="font-bold text-2xl text-primary">{order.total_amount.toLocaleString('fr-FR')}</p>
-                                <p className="text-sm text-slate-500">FCFA</p>
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-center gap-2 mb-3">
-                              <span className={`px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1 ${
-                                order.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-slate-100 text-slate-700 dark:text-slate-200'
-                              }`}>
-                                {order.status === 'completed' && <CheckCircle2 className="w-4 h-4" />}
-                                <span className="capitalize">{order.status === 'completed' ? 'Complétée' : order.status === 'pending' ? 'En attente' : order.status}</span>
-                              </span>
-                            </div>
-                            
-                            <ul className="space-y-2 pl-4 border-l-2 border-slate-200">
-                              {order.order_items.map(item => (
-                                <li key={item.id} className="text-sm text-slate-700 dark:text-slate-200 flex items-center gap-2">
-                                  <div className="w-2 h-2 rounded-full bg-primary"></div>
-                                  <span className="font-medium">{item.products.name}</span>
-                                  <span className="text-slate-500">(x{item.quantity})</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </motion.li>
-                        ))}
-                      </ul>
+                    {subscriptionLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Clock className="w-8 h-8 animate-spin text-primary" />
+                      </div>
+                    ) : !subscription || !subscription.has_subscription ? (
+                      <div className="text-center py-6">
+                        <Crown className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                        <p className="text-slate-600 dark:text-slate-300 mb-4">
+                          Vous n'avez pas encore d'abonnement
+                        </p>
+                        <Button 
+                          onClick={() => navigate('/payment')}
+                          className="bg-gradient-to-r from-primary to-accent text-white font-semibold shadow-lg hover:shadow-xl"
+                        >
+                          <CreditCard className="w-4 h-4 mr-2" />
+                          Souscrire maintenant
+                        </Button>
+                      </div>
                     ) : (
-                      <div className="text-center py-12">
-                        <ShoppingBag className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                        <p className="text-slate-500 text-lg font-medium">Aucune commande pour le moment</p>
-                        <p className="text-slate-400 text-sm mt-2">Vos achats apparaîtront ici</p>
+                      <div className="space-y-4">
+                        {/* Statut */}
+                        <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                          <span className="text-slate-600 dark:text-slate-300 font-medium">Statut</span>
+                          <div className={`flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r ${subscriptionStatus.color} text-white font-bold text-sm`}>
+                            <subscriptionStatus.icon className="w-4 h-4" />
+                            {subscription.status === 'trial' ? 'Essai gratuit' : 
+                             subscription.status === 'active' ? 'Actif' : 
+                             subscription.status === 'expired' ? 'Expiré' : 'Inactif'}
+                          </div>
+                        </div>
+
+                        {/* Jours restants pour l'essai */}
+                        {subscription.status === 'trial' && subscription.days_remaining !== null && (
+                          <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border-2 border-blue-200 dark:border-blue-800">
+                            <span className="text-slate-700 dark:text-slate-200 font-medium flex items-center gap-2">
+                              <Clock className="w-5 h-5 text-blue-600" />
+                              Jours restants
+                            </span>
+                            <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                              {subscription.days_remaining}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Date de début */}
+                        {subscription.trial_start_date && subscription.status === 'trial' && (
+                          <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                            <span className="text-slate-600 dark:text-slate-300 font-medium">Début de l'essai</span>
+                            <span className="font-semibold text-slate-900 dark:text-white">
+                              {new Date(subscription.trial_start_date).toLocaleDateString('fr-FR', { 
+                                day: 'numeric', month: 'long', year: 'numeric' 
+                              })}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Date de fin d'essai */}
+                        {subscription.trial_end_date && subscription.status === 'trial' && (
+                          <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                            <span className="text-slate-600 dark:text-slate-300 font-medium">Fin de l'essai</span>
+                            <span className="font-semibold text-slate-900 dark:text-white">
+                              {new Date(subscription.trial_end_date).toLocaleDateString('fr-FR', { 
+                                day: 'numeric', month: 'long', year: 'numeric' 
+                              })}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Date d'activation (pour abonnement actif) */}
+                        {subscription.subscription_start_date && subscription.status === 'active' && (
+                          <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border-2 border-green-200 dark:border-green-800">
+                            <span className="text-slate-700 dark:text-slate-200 font-medium flex items-center gap-2">
+                              <CheckCircle className="w-5 h-5 text-green-600" />
+                              Activé le
+                            </span>
+                            <span className="font-bold text-green-600 dark:text-green-400">
+                              {new Date(subscription.subscription_start_date).toLocaleDateString('fr-FR', { 
+                                day: 'numeric', month: 'long', year: 'numeric' 
+                              })}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Méthode de paiement */}
+                        {subscription.payment_method && subscription.status === 'active' && (
+                          <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                            <span className="text-slate-600 dark:text-slate-300 font-medium">Paiement</span>
+                            <span className="font-semibold text-slate-900 dark:text-white capitalize">
+                              {subscription.payment_method.replace('_', ' ')}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Accès */}
+                        {subscription.status === 'active' && (
+                          <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border-2 border-green-200 dark:border-green-800">
+                            <div className="flex items-center gap-3">
+                              <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                              <div>
+                                <p className="font-bold text-green-700 dark:text-green-400">Accès illimité activé !</p>
+                                <p className="text-sm text-green-600 dark:text-green-500">Profitez de tous les contenus sans limite</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* CTA pour payer si en essai */}
+                        {subscription.status === 'trial' && (
+                          <Button 
+                            onClick={() => navigate('/payment')}
+                            className="w-full bg-gradient-to-r from-primary to-accent text-white font-semibold shadow-lg hover:shadow-xl mt-4"
+                          >
+                            <CreditCard className="w-4 h-4 mr-2" />
+                            Payer 1000 FCFA - Accès illimité
+                          </Button>
+                        )}
+
+                        {/* CTA pour réactiver si expiré */}
+                        {subscription.status === 'expired' && (
+                          <Button 
+                            onClick={() => navigate('/payment')}
+                            className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold shadow-lg hover:shadow-xl mt-4"
+                          >
+                            <CreditCard className="w-4 h-4 mr-2" />
+                            Réactiver mon accès - 1000 FCFA
+                          </Button>
+                        )}
                       </div>
                     )}
                   </CardContent>

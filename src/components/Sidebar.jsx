@@ -18,7 +18,8 @@ import {
   BarChart3,
   Bot,
   History,
-  Share2
+  Share2,
+  CreditCard
 } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { Button } from '@/components/ui/button';
@@ -92,6 +93,14 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       description: 'Liens partagés',
       badge: 'NEW',
       badgeColor: 'bg-gradient-to-r from-blue-500 to-cyan-500'
+    },
+    { 
+      path: '/payment', 
+      icon: CreditCard, 
+      label: 'Paiement',
+      description: 'Finaliser l\'inscription',
+      badge: '1000 FCFA',
+      badgeColor: 'bg-gradient-to-r from-green-500 to-emerald-500'
     },
   ];
 

@@ -9,10 +9,9 @@ export default function NavbarPublic() {
 
   const navLinks = [
     { name: 'Accueil', path: '/' },
+    { name: 'À propos', path: '/about' },
     { name: 'Nos cours', path: '/courses' },
     { name: 'Tarifs', path: '/pricing' },
-    { name: 'Boutique', path: '/shop' },
-    { name: 'À propos', path: '/about' },
     { name: 'Contact', path: '/contact' },
   ];
 

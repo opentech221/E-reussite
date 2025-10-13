@@ -346,7 +346,6 @@ const About = () => {
             </motion.div>
           </div>
         </section>
-                      <h3 className="text-xl font-bold font-heading">{member.name}</h3>
 
         <Footer />
       </div>

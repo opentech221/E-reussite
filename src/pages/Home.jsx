@@ -42,9 +42,9 @@ const Home = () => {
     },
     {
       icon: Heart,
-      number: '100%',
-      label: 'Gratuit',
-      description: 'L\'orientation pour tous, sans barrière'
+      number: '1000 FCFA',
+      label: 'Inscription unique',
+      description: 'Accès illimité à vie + 7 jours d\'essai gratuit'
     },
   ];
 
