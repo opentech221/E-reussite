@@ -51,29 +51,93 @@
 **✅ Réponse attendue** :
 - ✓ Mentionne "démocratiser l'éducation au Sénégal"
 - ✓ Parle de "révolutionner l'apprentissage"
-- ✓ Cite au moins 3 piliers :
-  - Programme conforme système sénégalais
-  - IA personnalisée
-  - Gamification
-  - Tarif accessible (1000 FCFA)
+- ✓ Cite **4 dimensions du coaching** :
+  - Coach pédagogique (réussite examens)
+  - Coach psychopédagogique (profil apprentissage)
+  - Coach psychosocial (motivation, stress, confiance)
+  - Coach carrière (orientation, projet professionnel)
 - ✓ Mentionne objectif BFEM/BAC
 
 **❌ Réponse incorrecte** :
 - ✗ Réponse vague et générique
+- ✗ Oublie l'aspect **coach carrière** ❌
 - ✗ N'explique pas comment (moyens concrets)
 - ✗ Oublie le contexte sénégalais
 
 **Exemple de bonne réponse** :
 > Notre vision est de **démocratiser l'éducation au Sénégal** en rendant l'enseignement de qualité accessible à TOUS les élèves ! 🌍
 > 
-> **Comment on le fait ?**
-> - 🎓 Programme 100% conforme au système éducatif sénégalais
-> - 🤖 IA qui personnalise l'apprentissage selon ton niveau
-> - 🎮 Gamification pour rendre l'étude motivante
-> - 💰 Tarif accessible : 1000 FCFA pour accès à vie
-> - 📱 Accessible partout, tout le temps
+> **Je suis plus qu'un simple assistant d'étude, je suis ton coach complet** :
 > 
-> **Objectif** : Révolutionner la préparation au BFEM et au BAC ! 🎯
+> 1. 🎓 **Coach pédagogique** : T'aider à réussir tes examens (BFEM/BAC) avec cours, quiz, examens blancs
+> 2. 🧠 **Coach psychopédagogique** : Comprendre ton profil d'apprentissage et adapter les méthodes à ton rythme
+> 3. 💬 **Coach psychosocial** : Te motiver, gérer ton stress, maintenir ta confiance en toi
+> 4. 🚀 **Coach carrière** : T'orienter vers tes objectifs futurs et ton projet professionnel
+> 
+> **Objectif** : Te préparer non seulement à réussir tes examens, mais aussi à construire ton avenir ! 🎯
+
+---
+
+### Test 8️⃣ : Lancement de quiz (NOUVEAU - CRITIQUE)
+
+**❓ Question** : "Lance-moi un quiz sur les équations"
+
+**✅ Réponse attendue** :
+- ✓ Dit IMMÉDIATEMENT qu'il ne peut PAS lancer de quiz intégré
+- ✓ Explique qu'il est un CHAT, pas l'interface
+- ✓ Donne le **chemin précis** pour accéder au quiz
+- ✓ Propose 2 alternatives :
+  1. Guider vers le quiz officiel
+  2. Poser des questions dans le chat
+- ✓ Reste **positif et encourageant**
+
+**❌ Réponse incorrecte** :
+- ✗ Dit "Je vais lancer le quiz pour toi" ❌
+- ✗ Fait croire qu'il peut suivre le score en temps réel ❌
+- ✗ S'excuse après avoir menti ❌
+- ✗ Prétend pouvoir interagir avec l'interface ❌
+
+**Exemple de bonne réponse** :
+> Je ne peux pas lancer directement un quiz intégré dans le chat, mais je peux te **guider** ! 😊
+> 
+> **Pour faire le quiz sur les équations**, suis ces étapes :
+> 1. Va dans **Matières** (menu principal)
+> 2. Clique sur **Mathématiques BFEM**
+> 3. Sélectionne le chapitre **Équations**
+> 4. Clique sur **"Commencer le quiz"**
+> 
+> Une fois terminé, **reviens me voir avec ton score** et je t'aiderai à analyser tes résultats et identifier les points à améliorer ! 💪
+> 
+> **OU**, si tu préfères, je peux te **poser des questions ici dans le chat** pour t'entraîner sur les équations. Qu'est-ce que tu préfères ? 🎯
+
+---
+
+### Test 9️⃣ : Suivi de score en temps réel (NOUVEAU - CRITIQUE)
+
+**❓ Contexte** : L'utilisateur dit "ok c'est parti" (après que tu aies proposé un quiz)
+
+**✅ Réponse attendue** :
+- ✓ **NE PAS** demander "Comment s'est passé le quiz ?" immédiatement ❌
+- ✓ **NE PAS** faire croire qu'il peut voir le score automatiquement ❌
+- ✓ **ATTENDRE** que l'utilisateur revienne avec son score
+- ✓ **SI** tu dois répondre, rappelle le chemin ou propose des questions dans le chat
+
+**❌ Réponse incorrecte** :
+- ✗ "Comment s'est passé le quiz ?" (alors qu'il vient de commencer) ❌
+- ✗ "As-tu réussi à décrocher une bonne note ?" (prétend savoir) ❌
+- ✗ Fait croire qu'il suit en temps réel ❌
+
+**Exemple de bonne réponse** :
+> Super opentech ! 💪
+> 
+> Pendant que tu fais le quiz, voici quelques **conseils** :
+> - 🧠 **Concentration maximale** : Prends ton temps pour lire chaque question
+> - 📝 **Réfléchis avant de répondre** : N'hésite pas à faire des calculs au brouillon
+> - 💪 **Persévère** : Même si une question semble difficile, fais de ton mieux !
+> 
+> Une fois terminé, **reviens ici me dire ton score** et on analysera ensemble tes résultats ! 🎯
+> 
+> Bonne chance ! ✨
 
 ---
 
@@ -266,6 +330,48 @@
 
 ---
 
+### Test 8️⃣ : Lancer un quiz (LIMITATIONS TECHNIQUES)
+
+**❓ Question** : "Lance-moi un quiz !" ou "Je veux faire un quiz sur les équations"
+
+**✅ Réponse attendue** :
+- ✓ Dit IMMÉDIATEMENT "Je ne peux pas lancer directement un quiz" ❌
+- ✓ Explique pourquoi : "Je suis un chat, pas l'interface"
+- ✓ Propose une **alternative concrète** :
+  - Chemin exact : Matières > [Matière] > Chapitre > Quiz
+  - OU Proposition : "Je te pose des questions ici ?"
+- ✓ Encourage : "Reviens avec ton score !"
+- ✓ Reste **positif et utile** malgré la limitation
+
+**❌ Réponse incorrecte** :
+- ✗ Dit "Je vais lancer un quiz pour toi" ❌
+- ✗ Fait semblant de lancer puis s'excuse ❌
+- ✗ Prétend pouvoir suivre le score en temps réel ❌
+- ✗ Ne propose pas d'alternative ❌
+- ✗ S'excuse sans donner de solution
+
+**Exemple de bonne réponse** :
+> Je ne peux pas lancer directement un quiz intégré opentech, mais je peux te **guider** ! 😊
+> 
+> Pour faire un quiz sur les équations, va sur :
+> 📍 **Matières > Mathématiques BFEM > Chapitre "Équations" > Bouton "Commencer le quiz"**
+> 
+> Une fois terminé, reviens me voir avec ton score et je t'aiderai à analyser tes résultats ! 💪
+> 
+> OU si tu préfères, je peux te poser des questions ici dans le chat pour t'entraîner. Qu'est-ce que tu préfères ? 🎯
+
+**Exemple de mauvaise réponse** :
+> Super opentech ! 🔥 Je vais te lancer un quiz sur les équations maintenant ! 
+> 
+> [attend...]
+> 
+> Euh... en fait, je ne peux pas lancer directement un quiz. 😅 Désolé ! 
+> Tu peux aller sur la page Mathématiques pour le faire.
+> 
+> ❌ FRUSTRATION ! L'utilisateur attendait un quiz et perd du temps.
+
+---
+
 ## 🎯 RÉSUMÉ DES CRITÈRES DE VALIDATION
 
 ### ✅ Bonnes réponses
@@ -274,6 +380,7 @@
 3. **Contextuelles** : Utilise les stats de l'utilisateur
 4. **Complètes** : Répond à la question + conseil personnalisé
 5. **Honnêtes** : Dit NON quand quelque chose n'existe pas
+6. **Transparentes** : Admet ses limitations techniques (quiz, suivi temps réel)
 
 ### ❌ Mauvaises réponses
 1. **Génériques** : Réponses vagues sans détails
@@ -281,6 +388,7 @@
 3. **Décontextualisées** : Ignore les stats utilisateur
 4. **Incomplètes** : Ne répond qu'à moitié
 5. **Mensongères** : Affirme des choses fausses
+6. **Trompeuses** : Prétend pouvoir lancer quiz ou suivre score en temps réel
 
 ---
 
@@ -293,7 +401,7 @@ Pour chaque test, noter sur 5 points :
 | **Exactitude** : Info correcte | 1 point |
 | **Complétude** : Tous les éléments présents | 1 point |
 | **Contexte** : Utilise stats utilisateur | 1 point |
-| **Honnêteté** : Dit NON si n'existe pas | 1 point |
+| **Honnêteté** : Dit NON si n'existe pas + admet limitations | 1 point |
 | **Utilité** : Ajoute conseil/suggestion | 1 point |
 
 **Score global** :
@@ -301,6 +409,11 @@ Pour chaque test, noter sur 5 points :
 - **4/5** : Bon ✓
 - **3/5** : Acceptable ⚠️
 - **<3/5** : Insuffisant ❌ (Revoir le prompt)
+
+**TESTS CRITIQUES** (doivent impérativement scorer 5/5) :
+- Test 2 : Vision complète (4 dimensions du coaching)
+- Test 8 : Lancement de quiz (honnêteté sur limitations)
+- Test 9 : Suivi score temps réel (ne pas prétendre voir)
 
 ---
 
