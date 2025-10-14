@@ -45,6 +45,7 @@ import AIProviderSelectorCompact from '@/components/AIProviderSelectorCompact';
 import { useMultiProviderAI } from '@/hooks/useMultiProviderAI';
 import AICoachService from '@/lib/aiCoachService';
 import PerplexitySearchMode from '@/components/PerplexitySearchMode';
+import InteractiveQuiz from '@/components/InteractiveQuiz';
 
 const CoachIA = () => {
   const location = useLocation();
@@ -68,6 +69,16 @@ const CoachIA = () => {
   const [selectedImages, setSelectedImages] = useState([]);
   const [showHistory, setShowHistory] = useState(true);
   const [activeTab, setActiveTab] = useState('conversation');
+  
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // ÉTAT - QUIZ INTERACTIF
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const [showInteractiveQuiz, setShowInteractiveQuiz] = useState(false);
+  const [quizConfig, setQuizConfig] = useState({
+    subject: 'Mathématiques',
+    chapter: null,
+    difficulty: 'medium'
+  });
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // ÉTATS - ANALYSE IA
@@ -536,13 +547,46 @@ const CoachIA = () => {
 
                   {/* Messages */}
                   <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-                    {messages.length === 0 ? (
+                    {/* Quiz Interactif */}
+                    {showInteractiveQuiz ? (
+                      <InteractiveQuiz
+                        userId={user?.id}
+                        config={quizConfig}
+                        onComplete={(results) => {
+                          setShowInteractiveQuiz(false);
+                          // Message automatique du coach après quiz
+                          const scorePercent = Math.round((results.correctAnswers / results.totalQuestions) * 100);
+                          let congratsMessage = '';
+                          if (scorePercent >= 80) {
+                            congratsMessage = `🎉 Excellent ! Tu as obtenu ${scorePercent}% ! ${results.badgeEarned ? '🏆 Badge débloqué : ' + results.badgeEarned : ''}`;
+                          } else if (scorePercent >= 60) {
+                            congratsMessage = `👍 Bien joué ! ${scorePercent}% ! Continue comme ça !`;
+                          } else {
+                            congratsMessage = `💪 ${scorePercent}%. Ne t'inquiète pas, on va progresser ensemble !`;
+                          }
+                          toast({
+                            title: "Quiz terminé !",
+                            description: congratsMessage
+                          });
+                        }}
+                        onCancel={() => setShowInteractiveQuiz(false)}
+                      />
+                    ) : messages.length === 0 ? (
                       <div className="flex flex-col items-center justify-center h-full text-center py-12">
                         <Bot className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
                         <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-200 mb-2">Commencez une conversation</h3>
-                        <p className="text-slate-500 dark:text-slate-400 max-w-md">
+                        <p className="text-slate-500 dark:text-slate-400 max-w-md mb-6">
                           Posez-moi des questions sur vos cours, statistiques ou demandez des conseils !
                         </p>
+                        
+                        {/* Bouton Quiz Interactif */}
+                        <Button
+                          onClick={() => setShowInteractiveQuiz(true)}
+                          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 gap-2"
+                        >
+                          <Sparkles className="w-4 h-4" />
+                          Lancer un Quiz Interactif
+                        </Button>
                       </div>
                     ) : (
                       <div className="space-y-4">
@@ -561,6 +605,20 @@ const CoachIA = () => {
 
                   {/* Input zone */}
                   <CardContent className="border-t p-4">
+                    {/* Bouton Quiz Interactif (toujours visible) */}
+                    {!showInteractiveQuiz && (
+                      <div className="mb-3">
+                        <Button
+                          onClick={() => setShowInteractiveQuiz(true)}
+                          variant="outline"
+                          className="w-full bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-300 dark:border-purple-700 hover:from-purple-100 hover:to-pink-100 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 gap-2"
+                        >
+                          <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                          <span className="text-purple-700 dark:text-purple-300">Lancer un Quiz Interactif</span>
+                        </Button>
+                      </div>
+                    )}
+                    
                     {selectedImages.length > 0 && (
                       <div className="flex gap-2 mb-3 overflow-x-auto pb-2">
                         {selectedImages.map((img, i) => (
