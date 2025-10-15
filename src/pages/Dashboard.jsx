@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { 
   BookOpen, Award, TrendingUp, Target, Sigma, Atom, Feather, Footprints, 
   Timer, AlertTriangle, Trophy, Sparkles, MessageSquare, Clock, Calendar,
-  BarChart3, Activity, Star, Flame, Brain, Zap, BookMarked, Users, User, ChevronRight
+  BarChart3, Activity, Star, Flame, Brain, Zap, BookMarked, Users, User, ChevronRight, LayoutDashboard
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -888,11 +888,23 @@ const Dashboard = () => {
           </motion.div>
 
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-              <TabsTrigger value="progress">Progression</TabsTrigger>
-              <TabsTrigger value="analytics">Analytiques</TabsTrigger>
-              <TabsTrigger value="achievements">Succès</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-4 overflow-x-auto scrollbar-hide gap-1">
+              <TabsTrigger value="overview" className="flex items-center gap-2">
+                <LayoutDashboard className="h-4 w-4" />
+                <span className="hidden sm:inline">Vue d'ensemble</span>
+              </TabsTrigger>
+              <TabsTrigger value="progress" className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                <span className="hidden sm:inline">Progression</span>
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                <span className="hidden sm:inline">Analytiques</span>
+              </TabsTrigger>
+              <TabsTrigger value="achievements" className="flex items-center gap-2">
+                <Trophy className="h-4 w-4" />
+                <span className="hidden sm:inline">Succès</span>
+              </TabsTrigger>
             </TabsList>
 
             {/* Overview Tab */}

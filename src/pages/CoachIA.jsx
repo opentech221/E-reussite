@@ -28,7 +28,8 @@ import {
   AlertTriangle,
   RefreshCw,
   ChevronRight,
-  Globe
+  Globe,
+  Lightbulb
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,8 +45,12 @@ import MessageItem from '@/components/MessageItem';
 import AIProviderSelectorCompact from '@/components/AIProviderSelectorCompact';
 import { useMultiProviderAI } from '@/hooks/useMultiProviderAI';
 import AICoachService from '@/lib/aiCoachService';
+import aiConversationService from '@/lib/aiConversationService';
 import PerplexitySearchMode from '@/components/PerplexitySearchMode';
 import InteractiveQuiz from '@/components/InteractiveQuiz';
+import QuizHistory from '@/components/QuizHistory';
+import QuizRevisionSuggestions from '@/components/QuizRevisionSuggestions';
+import QuizLeaderboard from '@/components/QuizLeaderboard';
 
 const CoachIA = () => {
   const location = useLocation();
@@ -79,6 +84,7 @@ const CoachIA = () => {
     chapter: null,
     difficulty: 'medium'
   });
+  const [lastQuizSession, setLastQuizSession] = useState(null);
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // ÉTATS - ANALYSE IA
@@ -471,20 +477,39 @@ const CoachIA = () => {
 
           {/* Onglets principaux */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
-              <TabsTrigger value="conversation" className="gap-2">
-                <MessageSquare className="w-4 h-4" />
-                Conversation
-              </TabsTrigger>
-              <TabsTrigger value="recherche" className="gap-2">
-                <Globe className="w-4 h-4" />
-                Recherche Web
-              </TabsTrigger>
-              <TabsTrigger value="analyse" className="gap-2">
-                <Brain className="w-4 h-4" />
-                Analyse & Conseils
-              </TabsTrigger>
-            </TabsList>
+            {/* Conteneur scrollable pour les onglets */}
+            <div className="relative">
+              <div className="overflow-x-auto scrollbar-hide">
+                <TabsList className="inline-flex w-auto min-w-full lg:w-auto gap-2 p-1">
+                  <TabsTrigger value="conversation" className="gap-2 flex-shrink-0">
+                    <MessageSquare className="w-4 h-4" />
+                    <span className="hidden sm:inline">Conversation</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="recherche" className="gap-2 flex-shrink-0">
+                    <Globe className="w-4 h-4" />
+                    <span className="hidden sm:inline">Recherche Web</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="analyse" className="gap-2 flex-shrink-0">
+                    <Brain className="w-4 h-4" />
+                    <span className="hidden sm:inline">Analyse & Conseils</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="history" className="gap-2 flex-shrink-0">
+                    <BarChart3 className="w-4 h-4" />
+                    <span className="hidden sm:inline">Historique Quiz</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="suggestions" className="gap-2 flex-shrink-0">
+                    <Target className="w-4 h-4" />
+                    <span className="hidden sm:inline">Suggestions</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="leaderboard" className="gap-2 flex-shrink-0">
+                    <Trophy className="w-4 h-4" />
+                    <span className="hidden sm:inline">Classement</span>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+              {/* Indicateur de scroll (visible uniquement si nécessaire) */}
+              <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none lg:hidden" />
+            </div>
 
             {/* ONGLET 1: CONVERSATION */}
             <TabsContent value="conversation" className="space-y-4">
@@ -552,22 +577,94 @@ const CoachIA = () => {
                       <InteractiveQuiz
                         userId={user?.id}
                         config={quizConfig}
-                        onComplete={(results) => {
+                        onComplete={async (results) => {
                           setShowInteractiveQuiz(false);
-                          // Message automatique du coach après quiz
+                          
+                          // Calculer le pourcentage
                           const scorePercent = Math.round((results.correctAnswers / results.totalQuestions) * 100);
+                          
+                          // Message de félicitations selon performance
                           let congratsMessage = '';
                           if (scorePercent >= 80) {
-                            congratsMessage = `🎉 Excellent ! Tu as obtenu ${scorePercent}% ! ${results.badgeEarned ? '🏆 Badge débloqué : ' + results.badgeEarned : ''}`;
+                            congratsMessage = `🎉 Félicitations ! Tu as brillamment réussi avec ${scorePercent}% de bonnes réponses ! ${results.badgeEarned ? '\n🏆 Tu as débloqué un badge : ' + results.badgeEarned.name + ' ' + results.badgeEarned.icon + ' !' : ''}`;
                           } else if (scorePercent >= 60) {
-                            congratsMessage = `👍 Bien joué ! ${scorePercent}% ! Continue comme ça !`;
+                            congratsMessage = `👍 Bravo ! Tu as obtenu ${scorePercent}% ! C'est un bon score, continue sur cette lancée !`;
                           } else {
-                            congratsMessage = `💪 ${scorePercent}%. Ne t'inquiète pas, on va progresser ensemble !`;
+                            congratsMessage = `💪 Tu as obtenu ${scorePercent}%. Ne te décourage pas ! L'important c'est de progresser. Veux-tu qu'on révise ensemble les notions où tu as eu des difficultés ?`;
                           }
+                          
+                          // Créer un message automatique du Coach IA dans la conversation
+                          const coachFeedback = `📊 **Quiz Interactif Terminé !**\n\n${congratsMessage}\n\n**Résumé de ta performance :**\n✅ Bonnes réponses : ${results.correctAnswers}/${results.totalQuestions}\n📈 Score : ${scorePercent}%\n⏱️ Temps écoulé : ${Math.floor(results.timeElapsed / 60)}min ${results.timeElapsed % 60}s\n\n${scorePercent >= 80 ? '🌟 Excellente maîtrise du sujet !' : scorePercent >= 60 ? '👏 Bon travail, tu progresses bien !' : '💡 Continue à t\'entraîner, tu vas y arriver !'}`;
+                          
+                          try {
+                            // CORRECTION : Attendre que la conversation soit prête
+                            let conversationToUse = currentConversation;
+                            
+                            if (!conversationToUse?.id) {
+                              console.log('🔄 Création d\'une nouvelle conversation pour le feedback...');
+                              conversationToUse = await createConversation();
+                              
+                              // Attendre un peu que la conversation soit bien enregistrée
+                              await new Promise(resolve => setTimeout(resolve, 500));
+                            }
+                            
+                            if (conversationToUse?.id) {
+                              console.log('📤 Envoi du feedback dans la conversation:', conversationToUse.id);
+                              
+                              // CORRECTION : Envoyer directement avec role 'assistant' via le service
+                              const messageResult = await aiConversationService.saveMessage(
+                                conversationToUse.id,
+                                'assistant', // ← Role correct pour le Coach IA
+                                coachFeedback,
+                                'text',
+                                { quiz_feedback: true, score: scorePercent }
+                              );
+                              
+                              if (messageResult.success) {
+                                console.log('✅ Feedback envoyé avec succès !');
+                                // Recharger la conversation pour afficher le nouveau message
+                                await loadConversation(conversationToUse.id);
+                              } else {
+                                console.error('❌ Erreur sauvegarde feedback');
+                              }
+                            } else {
+                              console.error('❌ Impossible de créer une conversation pour le feedback');
+                              // Fallback : afficher au moins le toast
+                              toast({
+                                title: "🎉 Quiz terminé !",
+                                description: congratsMessage,
+                                duration: 8000
+                              });
+                            }
+                          } catch (error) {
+                            console.error('❌ Erreur ajout message coach:', error);
+                            // Fallback : afficher le toast même en cas d'erreur
+                            toast({
+                              title: "🎉 Quiz terminé !",
+                              description: congratsMessage,
+                              duration: 8000
+                            });
+                          }
+                          
+                          // NOUVEAU : Sauvegarder la dernière session pour les suggestions
+                          setLastQuizSession({
+                            sessionId: results.sessionId,
+                            results: results,
+                            questions: results.questions || [],
+                            userAnswers: results.userAnswers || []
+                          });
+                          
+                          // Toast notification toujours affiché
                           toast({
                             title: "Quiz terminé !",
-                            description: congratsMessage
+                            description: `${scorePercent}% - ${results.correctAnswers}/${results.totalQuestions} bonnes réponses`,
+                            duration: 5000
                           });
+                          
+                          // NOUVEAU : Basculer vers l'onglet suggestions après 2 secondes
+                          setTimeout(() => {
+                            setActiveTab('suggestions');
+                          }, 2000);
                         }}
                         onCancel={() => setShowInteractiveQuiz(false)}
                       />
@@ -834,6 +931,100 @@ const CoachIA = () => {
                   </CardContent>
                 </Card>
               )}
+            </TabsContent>
+
+            {/* ONGLET 4: HISTORIQUE QUIZ */}
+            <TabsContent value="history" className="space-y-4">
+              <Card className="border-purple-200 dark:border-purple-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-6 h-6 text-purple-500" />
+                    Historique des Quiz Interactifs
+                  </CardTitle>
+                  <CardDescription>
+                    Consulte tous tes quiz passés et recommence ceux que tu veux réviser
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <QuizHistory
+                    userId={user?.id}
+                    onRetryQuiz={(session) => {
+                      // Relancer le quiz en mode révision
+                      setActiveTab('conversation');
+                      setQuizConfig({
+                        subject: session.subject || 'Général',
+                        difficulty: session.difficulty_level || 'medium',
+                        reviewMode: true,
+                        sessionId: session.id
+                      });
+                      setShowInteractiveQuiz(true);
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* ONGLET 5: SUGGESTIONS DE RÉVISION */}
+            <TabsContent value="suggestions" className="space-y-4">
+              <Card className="border-orange-200 dark:border-orange-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Lightbulb className="w-6 h-6 text-orange-500" />
+                    Suggestions de Révision
+                  </CardTitle>
+                  <CardDescription>
+                    Recommandations personnalisées basées sur ton dernier quiz
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {lastQuizSession ? (
+                    <QuizRevisionSuggestions
+                      userId={user?.id}
+                      sessionId={lastQuizSession.sessionId}
+                      questions={lastQuizSession.questions}
+                      userAnswers={lastQuizSession.userAnswers}
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <Lightbulb className="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" />
+                      <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-200 mb-2">
+                        Aucune suggestion disponible
+                      </h3>
+                      <p className="text-slate-500 dark:text-slate-400 max-w-md mb-6">
+                        Complète un quiz interactif pour recevoir des suggestions personnalisées basées sur tes réponses !
+                      </p>
+                      <Button
+                        onClick={() => {
+                          setActiveTab('conversation');
+                          setShowInteractiveQuiz(true);
+                        }}
+                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                      >
+                        <Target className="w-4 h-4 mr-2" />
+                        Lancer un Quiz
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* ONGLET 6: CLASSEMENT QUIZ */}
+            <TabsContent value="leaderboard" className="space-y-4">
+              <Card className="border-purple-200 dark:border-purple-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Trophy className="w-6 h-6 text-purple-500" />
+                    Classement des Quiz Interactifs
+                  </CardTitle>
+                  <CardDescription>
+                    Compare ta progression avec les autres élèves
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <QuizLeaderboard userId={user?.id} />
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>

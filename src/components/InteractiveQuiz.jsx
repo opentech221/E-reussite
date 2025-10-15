@@ -55,9 +55,9 @@ const InteractiveQuiz = ({ userId, config, onComplete, onCancel }) => {
       onComplete({
         correctAnswers: finalStats.correctAnswers,
         totalQuestions: finalStats.totalQuestions,
-        scorePercent: finalStats.scorePercentage,
-        badgeEarned: finalStats.badgeEarned,
-        timeElapsed: finalStats.totalTime
+        scorePercent: finalStats.percentage,
+        badgeEarned: finalStats.badgeUnlocked,
+        timeElapsed: finalStats.timeElapsed
       });
     }
   }, [quizCompleted, finalStats, onComplete]);
@@ -213,7 +213,7 @@ const InteractiveQuiz = ({ userId, config, onComplete, onCancel }) => {
             {currentQuestion.options?.map((option, index) => {
               const optionLetter = String.fromCharCode(65 + index); // A, B, C, D
               const isSelected = currentAnswer?.user_answer === option;
-              const isCorrect = option === currentQuestion.correct_answer;
+              const isCorrect = index === currentQuestion.correct_answer;
               const showResult = showCorrection;
 
               let buttonClass = 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border-gray-300 dark:border-gray-600';
@@ -362,6 +362,21 @@ const InteractiveQuiz = ({ userId, config, onComplete, onCancel }) => {
           <p className="text-gray-600 dark:text-gray-400">
             {finalStats.correctAnswers} / {finalStats.totalQuestions} bonnes réponses
           </p>
+          
+          {/* Badge débloqué */}
+          {finalStats.badgeUnlocked && (
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30 rounded-full border-2 border-yellow-400 dark:border-yellow-600"
+            >
+              <span className="text-2xl">{finalStats.badgeUnlocked.icon}</span>
+              <span className="font-bold text-yellow-800 dark:text-yellow-200">
+                {finalStats.badgeUnlocked.name}
+              </span>
+            </motion.div>
+          )}
         </div>
 
         {/* Statistiques */}

@@ -233,17 +233,54 @@ export const useInteractiveQuiz = ({ userId, subject, chapter, difficulty = 'med
     if (!isActive || currentQuestionIndex >= questions.length) return;
 
     const currentQuestion = questions[currentQuestionIndex];
-    const isCorrect = selectedOption === currentQuestion.correct_answer;
+    
+    // Trouver l'index de l'option sélectionnée
+    const selectedIndex = currentQuestion.options.indexOf(selectedOption);
+    const isCorrect = selectedIndex === currentQuestion.correct_answer;
     
     // Temps passé sur la question
     const timeSpent = questionStartTime 
       ? Math.floor((Date.now() - questionStartTime) / 1000) 
       : 0;
 
-    // Enregistrer la réponse
+    // Enregistrer la réponse EN BASE DE DONNÉES
+    try {
+      // Convertir l'index correct en lettre (A, B, C, D)
+      const correctOptionLetter = ['A', 'B', 'C', 'D'][currentQuestion.correct_answer];
+      
+      const { error: insertError } = await supabase
+        .from('interactive_quiz_questions')
+        .insert({
+          session_id: sessionId,
+          question_number: currentQuestionIndex + 1,
+          question_text: currentQuestion.question,
+          question_type: 'qcm',
+          option_a: currentQuestion.options[0] || null,
+          option_b: currentQuestion.options[1] || null,
+          option_c: currentQuestion.options[2] || null,
+          option_d: currentQuestion.options[3] || null,
+          correct_option: correctOptionLetter,
+          user_answer: selectedOption,
+          is_correct: isCorrect,
+          answered_at: new Date().toISOString(),
+          time_to_answer_seconds: timeSpent,
+          explanation: currentQuestion.explanation || null
+        });
+
+      if (insertError) {
+        console.error('❌ Erreur sauvegarde réponse:', insertError);
+      } else {
+        console.log(`✅ Réponse ${currentQuestionIndex + 1} sauvegardée:`, isCorrect ? 'Correct ✓' : 'Incorrect ✗');
+      }
+    } catch (err) {
+      console.error('❌ Erreur insertion réponse:', err);
+    }
+
+    // Aussi garder dans l'état local pour l'affichage
     const answer = {
       question_id: currentQuestion.id,
       user_answer: selectedOption,
+      user_answer_index: selectedIndex,
       correct_answer: currentQuestion.correct_answer,
       is_correct: isCorrect,
       time_spent: timeSpent,
@@ -260,7 +297,7 @@ export const useInteractiveQuiz = ({ userId, subject, chapter, difficulty = 'med
     }
 
     return answer;
-  }, [isActive, currentQuestionIndex, questions, questionStartTime]);
+  }, [isActive, currentQuestionIndex, questions, questionStartTime, sessionId]);
 
   /**
    * Passer à la question suivante
@@ -283,7 +320,9 @@ export const useInteractiveQuiz = ({ userId, subject, chapter, difficulty = 'med
    */
   const calculateFinalStats = useCallback(() => {
     const totalQuestions = questions.length;
-    const correctAnswers = score;
+    // CORRECTION : Compter les réponses correctes depuis userAnswers au lieu de score
+    // pour éviter le problème d'état asynchrone
+    const correctAnswers = userAnswers.filter(a => a.is_correct).length;
     const percentage = Math.round((correctAnswers / totalQuestions) * 100);
     const averageTimePerQuestion = Math.round(timeElapsed / totalQuestions);
 
@@ -312,7 +351,7 @@ export const useInteractiveQuiz = ({ userId, subject, chapter, difficulty = 'med
       subject,
       chapter
     };
-  }, [questions.length, score, timeElapsed, difficulty, subject, chapter]);
+  }, [questions.length, userAnswers, timeElapsed, difficulty, subject, chapter]);
 
   /**
    * Terminer le quiz et sauvegarder
@@ -322,40 +361,69 @@ export const useInteractiveQuiz = ({ userId, subject, chapter, difficulty = 'med
     setIsActive(false);
     setQuizCompleted(true);
 
-    const stats = calculateFinalStats();
-    setFinalStats(stats);
-
     try {
-      console.log('📊 Quiz terminé - Stats:', stats);
+      console.log('📊 Finalisation du quiz...');
       
-      // Terminer la session via fonction SQL
+      // CORRECTION : Attendre 300ms pour laisser le temps aux dernières réponses
+      // d'être enregistrées en base de données avant de compter
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Terminer la session via fonction SQL (qui compte les vraies réponses en BDD)
       const { data, error: completeError } = await supabase.rpc('complete_interactive_quiz', {
         p_session_id: sessionId
       });
 
       if (completeError) {
         console.error('Erreur finalisation quiz:', completeError);
-      } else {
-        console.log('✅ Session terminée:', data);
+        // En cas d'erreur, calculer les stats localement en fallback
+        const stats = calculateFinalStats();
+        setFinalStats(stats);
+        return stats;
       }
 
-      // Note: La fonction SQL s'occupe de:
-      // - Mettre à jour le status à 'completed'
-      // - Calculer le score_percentage
-      // - Attribuer les points (si table user_points existe)
-      // - Débloquer le badge (retourné dans data.badge_unlocked)
+      console.log('✅ Session terminée:', data);
+
+      // CORRECTION : Utiliser les données retournées par la fonction SQL
+      // (qui compte les vraies réponses depuis la BDD)
+      const stats = {
+        totalQuestions: data.total_questions,
+        correctAnswers: data.correct_answers,
+        wrongAnswers: data.total_questions - data.correct_answers,
+        percentage: Math.round(data.score_percentage),
+        totalPoints: data.points_earned,
+        badgeUnlocked: data.badge_unlocked ? {
+          name: data.badge_unlocked,
+          icon: data.badge_unlocked.includes('🏆') ? '🏆' : 
+                data.badge_unlocked.includes('🥇') ? '🥇' :
+                data.badge_unlocked.includes('🥈') ? '🥈' :
+                data.badge_unlocked.includes('🥉') ? '🥉' : '✅',
+          description: `Quiz ${subject} réussi avec ${Math.round(data.score_percentage)}% !`
+        } : null,
+        timeElapsed,
+        averageTimePerQuestion: Math.round(timeElapsed / data.total_questions),
+        difficulty,
+        subject,
+        chapter
+      };
+
+      console.log('📊 Quiz terminé - Stats:', stats);
+      setFinalStats(stats);
 
       return stats;
     } catch (err) {
       console.error('Erreur finalisation quiz:', err);
       setError(err.message);
+      // En cas d'erreur, calculer les stats localement en fallback
+      const stats = calculateFinalStats();
+      setFinalStats(stats);
       return stats;
     }
   }, [
     stopTimer,
     calculateFinalStats,
     sessionId,
-    userId,
+    timeElapsed,
+    difficulty,
     subject,
     userAnswers
   ]);

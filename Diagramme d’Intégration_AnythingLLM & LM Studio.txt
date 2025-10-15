@@ -1,0 +1,56 @@
+                       ┌────────────────────────────────────┐
+                       │          UTILISATEUR FINAL          │
+                       │  Élève / Étudiant / Jeune diplômé   │
+                       └────────────────────────────────────┘
+                                       │
+                                       ▼
+                         (Navigue sur la plateforme)
+                 ┌────────────────────────────────────────┐
+                 │           E-RÉUSSITE WEB APP            │
+                 │-----------------------------------------│
+                 │  - Interface (React / Next.js / Vue)    │
+                 │  - Modules : Orientation, Coaching,     │
+                 │    Entrepreneurial, Public/Privé        │
+                 └────────────────────────────────────────┘
+                                       │
+                                       ▼
+             ┌──────────────────────────────────────────┐
+             │       ANYTHINGLLM (Cerveau central)      │
+             │------------------------------------------│
+             │  - Orchestration des requêtes IA          │
+             │  - Mémoire contextuelle (agents)          │
+             │  - Base vectorielle (Pinecone, ChromaDB)  │
+             │  - API / WebSocket vers E-Réussite        │
+             └──────────────────────────────────────────┘
+                                       │
+                                       ▼
+                ┌──────────────────────────────────────┐
+                │           LM STUDIO SERVER           │
+                │--------------------------------------│
+                │  Héberge localement les modèles :     │
+                │   - Mistral 7B Instruct v0.3          │
+                │   - Phi-4                             │
+                │   - Gemma 3 1B                        │
+                │                                      │
+                │  → Fournit une API locale (localhost) │
+                │    pour AnythingLLM                   │
+                └──────────────────────────────────────┘
+                                       │
+                                       ▼
+             ┌────────────────────────────────────────────┐
+             │               BASE DE DONNÉES              │
+             │--------------------------------------------│
+             │  Firestore (Profils, Plans de carrière,    │
+             │  historiques de discussion, progrès)       │
+             │                                            │
+             │  + Storage (ressources, documents, vidéos) │
+             └────────────────────────────────────────────┘
+                                       │
+                                       ▼
+           ┌──────────────────────────────────────────────┐
+           │             CLOUD FUNCTIONS (Queue)          │
+           │----------------------------------------------│
+           │  - Analyse asynchrone des profils            │
+           │  - Calcul des recommandations IA             │
+           │  - Notifications (email, SMS, in-app)        │
+           └──────────────────────────────────────────────┘
