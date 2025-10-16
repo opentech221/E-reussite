@@ -19,7 +19,8 @@ import {
   Bot,
   History,
   Share2,
-  CreditCard
+  CreditCard,
+  Calendar
 } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { Button } from '@/components/ui/button';
@@ -37,8 +38,16 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       description: 'Vue d\'ensemble'
     },
     { 
-      path: '/study-plan', 
+      path: '/coach-ia', 
       icon: Bot, 
+      label: 'Coach IA',
+      description: 'Assistant intelligent',
+      badge: 'IA',
+      badgeColor: 'bg-gradient-to-r from-violet-500 to-purple-500'
+    },
+    { 
+      path: '/study-plan', 
+      icon: Calendar, 
       label: 'Plan d\'Étude',
       description: 'Prédictions & Planning',
       badge: 'NEW',
