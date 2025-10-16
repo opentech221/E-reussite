@@ -41,7 +41,7 @@ export default function NavbarPrivate() {
     { name: 'Tableau de bord', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Cours', path: '/my-courses', icon: BookOpen },
     { name: 'Progression', path: '/progress', icon: TrendingUp },
-    { name: 'Coach IA', path: '/ai-coach', icon: Sparkles },
+    { name: 'Plan d\'Étude', path: '/study-plan', icon: Sparkles },
     { name: 'Défis', path: '/challenges', icon: Target },
     { name: 'Classement', path: '/leaderboard', icon: Trophy },
     { name: 'Badges', path: '/badges', icon: Award },

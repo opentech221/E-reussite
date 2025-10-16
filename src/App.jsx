@@ -38,7 +38,7 @@ const ActivityHistory = lazy(() => import('@/pages/ActivityHistory'));
 const FAQ = lazy(() => import('@/pages/FAQ'));
 const Help = lazy(() => import('@/pages/Help'));
 const TestProgressionDebug = lazy(() => import('@/pages/TestProgressionDebug'));
-const AICoach = lazy(() => import('@/pages/AICoach'));
+const StudyPlan = lazy(() => import('@/pages/StudyPlan'));
 const CoachIA = lazy(() => import('@/pages/CoachIA'));
 const Settings = lazy(() => import('@/pages/Settings'));
 const MySharedLinks = lazy(() => import('@/pages/MySharedLinks'));
@@ -95,7 +95,7 @@ function App() {
               <Route path="/badges" element={<Badges />} />
               <Route path="/progress" element={<Progress />} />
               <Route path="/historique" element={<ActivityHistory />} />
-              <Route path="/ai-coach" element={<AICoach />} />
+              <Route path="/study-plan" element={<StudyPlan />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/my-shared-links" element={<MySharedLinks />} />
               <Route path="/payment" element={<PaymentPage />} />

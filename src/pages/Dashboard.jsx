@@ -1393,10 +1393,10 @@ const Dashboard = () => {
                     <span>Quiz</span>
                   </Button>
                 </Link>
-                <Link to="/ai-coach">
+                <Link to="/study-plan">
                   <Button variant="outline" className="w-full h-20 flex-col gap-2 border-primary/30 hover:border-primary hover:bg-primary/5">
-                    <span className="text-2xl">🤖</span>
-                    <span className="text-primary font-semibold">Coach IA</span>
+                    <span className="text-2xl">📚</span>
+                    <span className="text-primary font-semibold">Plan d'Étude</span>
                   </Button>
                 </Link>
                 <Link to="/leaderboard">

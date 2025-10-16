@@ -315,9 +315,9 @@ const AIAssistantSidebar = () => {
     } else if (path.includes('/progress')) {
       page = 'Progression';
       section = 'stats-view';
-    } else if (path.includes('/ai-coach')) {
-      page = 'Coach IA';
-      section = 'analysis';
+    } else if (path.includes('/study-plan')) {
+      page = 'Plan d\'Étude';
+      section = 'planning';
     } else if (path.includes('/challenges')) {
       page = 'Défis';
       section = 'challenge-list';

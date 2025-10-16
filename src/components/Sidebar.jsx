@@ -37,10 +37,10 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       description: 'Vue d\'ensemble'
     },
     { 
-      path: '/coach-ia', 
+      path: '/study-plan', 
       icon: Bot, 
-      label: 'Coach IA',
-      description: 'Assistant intelligent',
+      label: 'Plan d\'Étude',
+      description: 'Prédictions & Planning',
       badge: 'NEW',
       badgeColor: 'bg-gradient-to-r from-purple-500 to-pink-500'
     },
@@ -197,7 +197,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                   <div className="flex-1 min-w-0">
                     <div className={`font-medium flex items-center gap-2 ${active ? 'text-blue-600 dark:text-blue-400' : 'text-slate-900 dark:text-slate-100'}`}>
                       <span>{item.label}</span>
-                      {/* Badge NEW pour Coach IA */}
+                      {/* Badge NEW pour Plan d'Étude */}
                       {item.badge && (
                         <span className={`px-1.5 py-0.5 text-[10px] font-bold text-white rounded ${item.badgeColor || 'bg-blue-500'} animate-pulse`}>
                           {item.badge}
