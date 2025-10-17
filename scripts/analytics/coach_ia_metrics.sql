@@ -15,24 +15,32 @@ SELECT
   MAX(created_at) as period_end
 FROM ai_conversations
 WHERE created_at >= '2025-10-21' 
-  AND created_at < '2025-10-28'
-  AND conversation_id IS NOT NULL;
+  AND created_at < '2025-10-28';
 
 -- Distribution durées (bonus)
+WITH durations AS (
+  SELECT 
+    CASE 
+      WHEN EXTRACT(EPOCH FROM (updated_at - created_at)) / 60 < 2 THEN '< 2min'
+      WHEN EXTRACT(EPOCH FROM (updated_at - created_at)) / 60 < 5 THEN '2-5min'
+      WHEN EXTRACT(EPOCH FROM (updated_at - created_at)) / 60 < 10 THEN '5-10min'
+      ELSE '> 10min'
+    END as duration_range
+  FROM ai_conversations
+  WHERE created_at >= '2025-10-21' 
+    AND created_at < '2025-10-28'
+)
 SELECT 
-  CASE 
-    WHEN EXTRACT(EPOCH FROM (updated_at - created_at)) / 60 < 2 THEN '< 2min'
-    WHEN EXTRACT(EPOCH FROM (updated_at - created_at)) / 60 < 5 THEN '2-5min'
-    WHEN EXTRACT(EPOCH FROM (updated_at - created_at)) / 60 < 10 THEN '5-10min'
-    ELSE '> 10min'
-  END as duration_range,
-  COUNT(*) as count,
-  ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as percentage
-FROM ai_conversations
-WHERE created_at >= '2025-10-21' 
-  AND created_at < '2025-10-28'
-  AND conversation_id IS NOT NULL
-GROUP BY duration_range
+  duration_range,
+  cnt as count,
+  COALESCE(ROUND(cnt * 100.0 / NULLIF(SUM(cnt) OVER (), 0), 2), 0) as percentage
+FROM (
+  SELECT 
+    duration_range,
+    COUNT(*) as cnt
+  FROM durations
+  GROUP BY duration_range
+) t
 ORDER BY 
   CASE duration_range
     WHEN '< 2min' THEN 1
@@ -63,8 +71,8 @@ post_coach_actions AS (
     END) as quizzes_24h,
     -- Examens blancs dans les 72h
     COUNT(DISTINCT CASE 
-      WHEN e.created_at > cu.coach_date 
-       AND e.created_at < cu.coach_date + INTERVAL '72 hours'
+      WHEN e.completed_at > cu.coach_date 
+       AND e.completed_at < cu.coach_date + INTERVAL '72 hours'
       THEN e.id 
     END) as exams_72h
   FROM coach_users cu
@@ -74,8 +82,8 @@ post_coach_actions AS (
 )
 SELECT 
   'advice_application_rate_pct' as metric,
-  ROUND(COUNT(CASE WHEN quizzes_24h > 0 OR exams_72h > 0 THEN 1 END) 
-        * 100.0 / COUNT(*), 2) as value,
+  COALESCE(ROUND(COUNT(CASE WHEN quizzes_24h > 0 OR exams_72h > 0 THEN 1 END) 
+        * 100.0 / NULLIF(COUNT(*), 0), 2), 0) as value,
   COUNT(*) as sample_size,
   COUNT(CASE WHEN quizzes_24h > 0 THEN 1 END) as users_did_quiz,
   COUNT(CASE WHEN exams_72h > 0 THEN 1 END) as users_did_exam
@@ -86,20 +94,21 @@ FROM post_coach_actions;
 -- =====================
 WITH sentiment AS (
   SELECT 
-    conversation_id,
+    m.conversation_id,
     MAX(CASE 
-      WHEN content ~* '(merci|génial|super|excellent|top|parfait|wow|impressionnant)' 
+      WHEN m.content ~* '(merci|génial|super|excellent|top|parfait|wow|impressionnant)' 
       THEN 1 ELSE 0 
     END) as has_positive,
     MAX(CASE 
-      WHEN content ~* '(nul|pas compris|compliqué|aide pas|inutile|décevant)' 
+      WHEN m.content ~* '(nul|pas compris|compliqué|aide pas|inutile|décevant)' 
       THEN 1 ELSE 0 
     END) as has_negative
-  FROM ai_conversations
-  WHERE created_at >= '2025-10-21' 
-    AND created_at < '2025-10-28'
-    AND role = 'user'
-  GROUP BY conversation_id
+  FROM ai_messages m
+  JOIN ai_conversations c ON c.id = m.conversation_id
+  WHERE c.created_at >= '2025-10-21' 
+    AND c.created_at < '2025-10-28'
+    AND m.role = 'user'
+  GROUP BY m.conversation_id
 ),
 nps_categories AS (
   SELECT 
@@ -112,8 +121,8 @@ nps_categories AS (
 )
 SELECT 
   'nps_score' as metric,
-  ROUND((COUNT(CASE WHEN category = 'promoter' THEN 1 END) * 100.0 / COUNT(*)) -
-        (COUNT(CASE WHEN category = 'detractor' THEN 1 END) * 100.0 / COUNT(*)), 2) as value,
+  COALESCE(ROUND((COUNT(CASE WHEN category = 'promoter' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0)) -
+        (COUNT(CASE WHEN category = 'detractor' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0)), 2), 0) as value,
   COUNT(*) as sample_size,
   COUNT(CASE WHEN category = 'promoter' THEN 1 END) as promoters,
   COUNT(CASE WHEN category = 'passive' THEN 1 END) as passives,
@@ -142,7 +151,7 @@ return_visits AS (
   SELECT 
     fv.user_id,
     fv.first_visit,
-    COUNT(DISTINCT ac.conversation_id) as return_count
+    COUNT(DISTINCT ac.id) as return_count
   FROM first_visits fv
   LEFT JOIN ai_conversations ac 
     ON ac.user_id = fv.user_id
@@ -152,8 +161,8 @@ return_visits AS (
 )
 SELECT 
   'return_rate_pct' as metric,
-  ROUND(COUNT(CASE WHEN return_count > 0 THEN 1 END) 
-        * 100.0 / COUNT(*), 2) as value,
+  COALESCE(ROUND(COUNT(CASE WHEN return_count > 0 THEN 1 END) 
+        * 100.0 / NULLIF(COUNT(*), 0), 2), 0) as value,
   COUNT(*) as sample_size,
   COUNT(CASE WHEN return_count > 0 THEN 1 END) as returning_users,
   COUNT(CASE WHEN return_count = 0 THEN 1 END) as one_time_users,
@@ -173,13 +182,13 @@ SELECT
   COUNT(*) as sample_size
 FROM (
   SELECT 
-    conversation_id,
+    m.conversation_id,
     COUNT(*) as message_count
-  FROM ai_conversations
-  WHERE created_at >= '2025-10-21' 
-    AND created_at < '2025-10-28'
-    AND conversation_id IS NOT NULL
-  GROUP BY conversation_id
+  FROM ai_messages m
+  JOIN ai_conversations c ON c.id = m.conversation_id
+  WHERE c.created_at >= '2025-10-21' 
+    AND c.created_at < '2025-10-28'
+  GROUP BY m.conversation_id
 ) as conv_messages;
 
 -- Top sujets (mots-clés fréquents)
@@ -187,26 +196,27 @@ SELECT
   'top_keywords' as metric,
   keyword,
   COUNT(*) as frequency,
-  ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as percentage
+  COALESCE(ROUND(COUNT(*) * 100.0 / NULLIF(SUM(COUNT(*)) OVER (), 0), 2), 0) as percentage
 FROM (
   SELECT 
-    conversation_id,
+    m.conversation_id,
     CASE 
-      WHEN content ~* 'bfem' THEN 'BFEM'
-      WHEN content ~* 'bac' THEN 'BAC'
-      WHEN content ~* '(maths|mathématiques)' THEN 'Maths'
-      WHEN content ~* '(stress|anxieux|peur)' THEN 'Stress'
-      WHEN content ~* '(révision|réviser)' THEN 'Révision'
-      WHEN content ~* '(quiz)' THEN 'Quiz'
-      WHEN content ~* '(examen|exam)' THEN 'Examen'
-      WHEN content ~* '(routine)' THEN 'Routine'
-      WHEN content ~* '(nul|faible)' THEN 'Difficulté'
+      WHEN m.content ~* 'bfem' THEN 'BFEM'
+      WHEN m.content ~* 'bac' THEN 'BAC'
+      WHEN m.content ~* '(maths|mathématiques)' THEN 'Maths'
+      WHEN m.content ~* '(stress|anxieux|peur)' THEN 'Stress'
+      WHEN m.content ~* '(révision|réviser)' THEN 'Révision'
+      WHEN m.content ~* '(quiz)' THEN 'Quiz'
+      WHEN m.content ~* '(examen|exam)' THEN 'Examen'
+      WHEN m.content ~* '(routine)' THEN 'Routine'
+      WHEN m.content ~* '(nul|faible)' THEN 'Difficulté'
       ELSE 'Autre'
     END as keyword
-  FROM ai_conversations
-  WHERE created_at >= '2025-10-21' 
-    AND created_at < '2025-10-28'
-    AND role = 'user'
+  FROM ai_messages m
+  JOIN ai_conversations c ON c.id = m.conversation_id
+  WHERE c.created_at >= '2025-10-21' 
+    AND c.created_at < '2025-10-28'
+    AND m.role = 'user'
 ) as keywords
 GROUP BY keyword
 ORDER BY frequency DESC
