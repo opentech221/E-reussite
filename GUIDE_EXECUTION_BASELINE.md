@@ -30,8 +30,8 @@ SELECT
   MIN(created_at) as period_start,
   MAX(created_at) as period_end
 FROM ai_conversations
-WHERE created_at >= '2025-10-21' 
-  AND created_at < '2025-10-28';
+WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
+  AND created_at < CURRENT_DATE;
 ```
 
 **Cliquer "Run"** → Noter résultat ci-dessous :
@@ -53,8 +53,8 @@ sample_size: __________
 WITH coach_users AS (
   SELECT DISTINCT user_id, created_at
   FROM ai_conversations
-  WHERE created_at >= '2025-10-21' 
-    AND created_at < '2025-10-28'
+  WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
+    AND created_at < CURRENT_DATE
 ),
 post_coach_actions AS (
   SELECT 
@@ -116,8 +116,8 @@ WITH sentiment AS (
     ) as sentiment_score
   FROM ai_messages m
   JOIN ai_conversations c ON c.id = m.conversation_id
-  WHERE c.created_at >= '2025-10-21' 
-    AND c.created_at < '2025-10-28'
+  WHERE c.created_at >= CURRENT_DATE - INTERVAL '7 days'
+    AND c.created_at < CURRENT_DATE
     AND m.role = 'user'
   GROUP BY m.conversation_id
 )
@@ -171,8 +171,8 @@ WITH first_conversations AS (
     user_id,
     MIN(created_at) as first_conv_date
   FROM ai_conversations
-  WHERE created_at >= '2025-10-21' 
-    AND created_at < '2025-10-28'
+  WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
+    AND created_at < CURRENT_DATE
   GROUP BY user_id
 ),
 returning_users AS (
