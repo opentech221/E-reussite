@@ -1,0 +1,91 @@
+========================================
+BASELINE COACH IA v3.0 - 21 OCTOBRE 2025
+========================================
+
+Date collecte: 21/10/2025 à 11h30
+Période: 7 derniers jours (18-21 Oct 2025)
+
+METRIC 1 - Temps moyen conversation
+- Valeur: 0.03 min (~2 secondes)
+- Sample: 2 conversations
+- Period: 2025-10-18 15:33 → 2025-10-18 15:36
+- Status: ❌ ROUGE (très en-dessous de l'objectif)
+- Objectif: ≥ 3.9 min
+- Observation: Conversations très courtes, probablement tests ou erreurs
+
+METRIC 2 - Application conseils
+- Valeur: 0.00%
+- Sample: 2 users
+- Quiz 24h: 0 users
+- Exam 72h: 0 users
+- Status: ❌ ROUGE
+- Objectif: ≥ 21%
+- Observation: Aucun utilisateur n'a appliqué les conseils après Coach IA
+
+METRIC 3 - NPS Satisfaction
+- Valeur NPS: 0.00
+- Conversion /10: 7/10 (NPS 0-20 → moyen)
+- Sample: 1 conversation
+- Promoters: 0
+- Passives: 1
+- Detractors: 0
+- Status: ❌ ROUGE
+- Objectif: ≥ 9.0/10
+- Observation: Sentiment neutre/passif, pas d'enthousiasme
+
+METRIC 4 - Retour 7 jours
+- Valeur: 0.00%
+- Sample: 2 users
+- Returning: 0 users
+- One-time: 2 users
+- Status: ❌ ROUGE
+- Objectif: ≥ 37.5%
+- Observation: 100% one-time users, aucun retour
+
+========================================
+SCORE GLOBAL: 0/4 métriques vertes ✅
+========================================
+
+OBSERVATIONS DAY 1 (Période test 7 jours):
+
+🔴 CONSTAT CRITIQUE:
+- Volume très faible (2 conversations, 2 users)
+- Données probablement de test/développement
+- Conversations ultra-courtes (2 secondes) → non représentatives
+- Aucun engagement post-Coach IA
+
+⚠️ HYPOTHÈSES:
+1. Coach IA v3.0 pas encore déployé en production
+2. Données = tests développeur uniquement
+3. Période 18-21 Oct = phase de développement
+4. Users réels n'ont pas encore accès à la nouvelle version
+
+✅ VALIDATION TECHNIQUE:
+- ✅ Toutes les requêtes SQL s'exécutent sans erreur
+- ✅ Fenêtre dynamique (7 jours) fonctionne correctement
+- ✅ Calculs (NPS, pourcentages, durées) corrects
+- ✅ Protection division par zéro opérationnelle
+
+🎯 ACTIONS RECOMMANDÉES:
+1. Déployer Coach IA v3.0 en production (si pas encore fait)
+2. Attendre accumulation données réelles (3-5 jours minimum)
+3. Re-collecter baseline avec volume significatif (>10 conversations)
+4. En attendant: continuer développement Streak UI comme prévu
+
+📅 NEXT ACTIONS:
+- Aujourd'hui: Commencer Streak UI enhancement (ne pas attendre baseline)
+- Ce soir 20h: Re-vérifier si nouvelles conversations aujourd'hui
+- Demain 22 Oct 9h: Collecte Day 2 (espoir: volume augmenté)
+- 28 Oct: Final report avec données accumulées semaine complète
+
+========================================
+DÉCISION: CONTINUER DÉVELOPPEMENT
+========================================
+
+Le faible volume actuel est NORMAL en phase de développement.
+On continue le plan comme prévu:
+- ✅ Streak UI enhancement (aujourd'hui)
+- ✅ Notifications push activation (cette semaine)
+- ✅ Monitoring quotidien 22-28 Oct (parallèle)
+
+Les vraies métriques viendront avec l'usage réel post-déploiement.

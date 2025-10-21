@@ -20,6 +20,7 @@ import NotificationManager from '@/components/NotificationManager';
 import { supabase } from '../lib/customSupabaseClient';
 import { useSubscription } from '@/hooks/useSubscription';
 import TrialCountdownBadge from '@/components/TrialCountdownBadge';
+import StreakBadge from '@/components/StreakBadge';
 
 // ============================================
 // HELPER FUNCTIONS
@@ -847,10 +848,17 @@ const Dashboard = () => {
                   
                   {/* Quick Stats */}
                   <div className="flex items-center gap-6 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Flame className="w-4 h-4 text-orange-300" />
-                      <span>{dashboardData.stats.currentStreak} jours consécutifs</span>
-                    </div>
+                    {/* Streak Badge - Animated with milestones */}
+                    {userPoints && (
+                      <StreakBadge 
+                        currentStreak={userPoints.current_streak || 0}
+                        longestStreak={userPoints.longest_streak || 0}
+                        lastActivityDate={userPoints.last_activity_date}
+                        variant="minimal"
+                        showProgress={false}
+                        className="scale-110"
+                      />
+                    )}
                     <div className="flex items-center gap-2">
                       <Target className="w-4 h-4 text-green-300" />
                       <span>{dashboardData.stats.averageScore}% de moyenne</span>
