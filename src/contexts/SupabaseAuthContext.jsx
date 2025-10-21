@@ -179,6 +179,16 @@ export const AuthProvider = ({ children }) => {
         description: error.message || "Email ou mot de passe incorrect",
       });
     } else {
+      // Incrémenter le compteur de connexions
+      try {
+        await supabase.rpc('increment_user_login_count', {
+          user_id: data.user.id
+        });
+      } catch (loginCountError) {
+        console.warn('Failed to increment login count:', loginCountError);
+        // Ne pas bloquer la connexion si l'incrémentation échoue
+      }
+
       toast({
         title: "Bon retour ! 👋",
         description: "Vous êtes maintenant connecté(e).",
