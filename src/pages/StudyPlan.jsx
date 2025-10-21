@@ -105,7 +105,7 @@ const StudyPlan = () => {
     );
   }
 
-  if (!analysis || !studyPlan) {
+  if (!analysis || !studyPlan || !analysis.predictions || !analysis.overall) {
     return (
       <>
         <Navbar />
@@ -199,21 +199,21 @@ const StudyPlan = () => {
                           <div className="text-2xl mb-1">🟢</div>
                           <div className="text-xs text-slate-600 mb-1">Facile</div>
                           <div className="text-lg font-bold text-green-700">
-                            {analysis.exams.byDifficulty.facile}%
+                            {analysis?.exams?.byDifficulty?.facile || 0}%
                           </div>
                         </div>
                         <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200 text-center">
                           <div className="text-2xl mb-1">🟡</div>
                           <div className="text-xs text-slate-600 mb-1">Moyen</div>
                           <div className="text-lg font-bold text-yellow-700">
-                            {analysis.exams.byDifficulty.moyen}%
+                            {analysis?.exams?.byDifficulty?.moyen || 0}%
                           </div>
                         </div>
                         <div className="p-3 bg-red-50 rounded-lg border border-red-200 text-center">
                           <div className="text-2xl mb-1">🔴</div>
                           <div className="text-xs text-slate-600 mb-1">Difficile</div>
                           <div className="text-lg font-bold text-red-700">
-                            {analysis.exams.byDifficulty.difficile}%
+                            {analysis?.exams?.byDifficulty?.difficile || 0}%
                           </div>
                         </div>
                       </div>
