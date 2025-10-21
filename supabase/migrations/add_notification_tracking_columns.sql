@@ -39,7 +39,10 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Trigger on auth.sessions table (fires on each login)
+-- ⚠️ IMPORTANT: Drop existing trigger first to avoid conflict
 DROP TRIGGER IF EXISTS on_auth_login ON auth.sessions;
+
+-- Create new trigger (will replace any existing one)
 CREATE TRIGGER on_auth_login
   AFTER INSERT ON auth.sessions
   FOR EACH ROW
@@ -49,4 +52,8 @@ CREATE TRIGGER on_auth_login
 -- VERIFICATION QUERY
 -- ============================================
 -- Run this to check columns were added:
--- SELECT id, email, login_count, notification_dismiss_count FROM profiles LIMIT 5;
+-- Note: email is in auth.users, not profiles, so we join the tables
+-- SELECT p.id, u.email, p.login_count, p.notification_dismiss_count 
+-- FROM profiles p 
+-- LEFT JOIN auth.users u ON u.id = p.id 
+-- LIMIT 5;
