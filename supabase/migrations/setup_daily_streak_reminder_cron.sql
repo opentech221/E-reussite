@@ -144,7 +144,7 @@ LIMIT 10;
 SELECT 
   up.user_id,
   p.full_name,
-  p.email,
+  u.email,
   up.current_streak,
   up.last_activity_date,
   COUNT(ps.id) AS active_subscriptions
@@ -154,7 +154,7 @@ LEFT JOIN auth.users u ON u.id = up.user_id
 LEFT JOIN push_subscriptions ps ON ps.user_id = up.user_id AND ps.is_active = true
 WHERE up.current_streak > 0
   AND up.last_activity_date < CURRENT_DATE
-GROUP BY up.user_id, p.full_name, p.email, up.current_streak, up.last_activity_date
+GROUP BY up.user_id, p.full_name, u.email, up.current_streak, up.last_activity_date
 ORDER BY up.current_streak DESC;
 
 -- ============================================
