@@ -827,7 +827,11 @@ const Dashboard = () => {
       </Helmet>
 
       {/* Notification Permission Modal - Appears after 2nd login */}
-      <NotificationPermissionModal userId={user?.id} />
+      <NotificationPermissionModal 
+        userId={user?.id}
+        loginCount={userProfile?.login_count || 0}
+        userProfile={userProfile}
+      />
 
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
         <Navbar />
