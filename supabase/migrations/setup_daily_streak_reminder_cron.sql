@@ -22,6 +22,9 @@ SELECT * FROM pg_extension WHERE extname = 'pg_cron';
 -- Supprimer le job s'il existe déjà (pour réexécuter le script)
 SELECT cron.unschedule('daily-streak-reminder');
 
+-- ⚠️ IMPORTANT : Remplacer YOUR_SERVICE_ROLE_KEY par ta clé service_role
+-- Trouver la clé : Supabase Dashboard → Project Settings → API → service_role key
+
 -- Créer le nouveau cron job
 -- Schedule: Tous les jours à 21h00 UTC (22h Paris en hiver, 23h en été)
 -- Note: Ajuster le fuseau horaire si nécessaire
@@ -33,7 +36,7 @@ SELECT cron.schedule(
     url := 'https://qbvdrkhdjjpuowthwinf.supabase.co/functions/v1/send-daily-streak-reminder',
     headers := jsonb_build_object(
       'Authorization', 
-      'Bearer ' || current_setting('app.settings.service_role_key'),
+      'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',  -- ⚠️ REMPLACER PAR TA VRAIE CLÉ
       'Content-Type',
       'application/json'
     ),
@@ -66,12 +69,15 @@ WHERE jobname = 'daily-streak-reminder';
 -- TESTER LE CRON JOB MANUELLEMENT
 -- ============================================
 
+-- ⚠️ IMPORTANT : Remplacer YOUR_SERVICE_ROLE_KEY par ta clé service_role
+-- Trouver la clé : Supabase Dashboard → Project Settings → API → service_role key
+
 -- Option 1: Exécuter la commande directement (test immédiat)
 SELECT net.http_post(
   url := 'https://qbvdrkhdjjpuowthwinf.supabase.co/functions/v1/send-daily-streak-reminder',
   headers := jsonb_build_object(
     'Authorization', 
-    'Bearer ' || current_setting('app.settings.service_role_key'),
+    'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',  -- ⚠️ REMPLACER PAR TA VRAIE CLÉ
     'Content-Type',
     'application/json'
   ),
