@@ -28,20 +28,16 @@ SELECT cron.unschedule('daily-streak-reminder');
 -- Créer le nouveau cron job
 -- Schedule: Tous les jours à 21h00 UTC (22h Paris en hiver, 23h en été)
 -- Note: Ajuster le fuseau horaire si nécessaire
+-- Note: Utilise net.http_post (schéma de pg_net dans Supabase)
 SELECT cron.schedule(
   'daily-streak-reminder',              -- Job name
   '0 21 * * *',                         -- Cron expression (21h UTC)
   $$
   SELECT net.http_post(
     url := 'https://qbvdrkhdjjpuowthwinf.supabase.co/functions/v1/send-daily-streak-reminder',
-    headers := jsonb_build_object(
-      'Authorization', 
-      'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',  -- ⚠️ REMPLACER PAR TA VRAIE CLÉ
-      'Content-Type',
-      'application/json'
-    ),
+    headers := '{"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFidmRya2hkampwdW93dGh3aW5mIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTMxNzg2NSwiZXhwIjoyMDc0ODkzODY1fQ.__YZeo2ByS_UiIyMNBlpnTkVavpyfGQ_AruIOlAXplQ", "Content-Type": "application/json"}'::jsonb,
     body := '{}'::jsonb
-  ) AS request_id;
+  );
   $$
 );
 
@@ -73,16 +69,12 @@ WHERE jobname = 'daily-streak-reminder';
 -- Trouver la clé : Supabase Dashboard → Project Settings → API → service_role key
 
 -- Option 1: Exécuter la commande directement (test immédiat)
+-- Note: Utilise net.http_post (schéma de pg_net)
 SELECT net.http_post(
   url := 'https://qbvdrkhdjjpuowthwinf.supabase.co/functions/v1/send-daily-streak-reminder',
-  headers := jsonb_build_object(
-    'Authorization', 
-    'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',  -- ⚠️ REMPLACER PAR TA VRAIE CLÉ
-    'Content-Type',
-    'application/json'
-  ),
+  headers := '{"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFidmRya2hkampwdW93dGh3aW5mIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTMxNzg2NSwiZXhwIjoyMDc0ODkzODY1fQ.__YZeo2ByS_UiIyMNBlpnTkVavpyfGQ_AruIOlAXplQ", "Content-Type": "application/json"}'::jsonb,
   body := '{}'::jsonb
-) AS request_id;
+);
 
 -- Option 2: Voir l'historique des exécutions
 SELECT 
