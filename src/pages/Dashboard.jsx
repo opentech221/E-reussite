@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PointsChart from '@/components/PointsChart';
 import Challenges from '@/components/Challenges';
 import NotificationManager from '@/components/NotificationManager';
+import NotificationPermissionModal from '@/components/NotificationPermissionModal';
 import { supabase } from '../lib/customSupabaseClient';
 import { useSubscription } from '@/hooks/useSubscription';
 import TrialCountdownBadge from '@/components/TrialCountdownBadge';
@@ -824,6 +825,13 @@ const Dashboard = () => {
         <title>Tableau de bord - E-Réussite</title>
         <meta name="description" content="Votre tableau de bord E-Réussite - Suivez votre progression et accédez à vos cours." />
       </Helmet>
+
+      {/* Notification Permission Modal - Appears after 2nd login */}
+      <NotificationPermissionModal 
+        userId={user?.id}
+        loginCount={userProfile?.login_count || 0}
+        userProfile={userProfile}
+      />
 
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
         <Navbar />
