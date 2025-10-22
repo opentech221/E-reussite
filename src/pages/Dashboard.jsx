@@ -815,12 +815,10 @@ const Dashboard = () => {
         .from('user_progress')
         .select(`
           time_spent,
-          lecons:lecon_id (
-            chapitres:chapitre_id (
-              matieres:matiere_id (
-                name,
-                color
-              )
+          chapitres:chapitre_id (
+            matieres:matiere_id (
+              name,
+              color
             )
           )
         `)
@@ -830,8 +828,8 @@ const Dashboard = () => {
       // Aggréger par matière
       const matiereMap = {};
       progressData?.forEach(p => {
-        const matiereName = p.lecons?.chapitres?.matieres?.name || 'Autre';
-        const matiereColor = p.lecons?.chapitres?.matieres?.color || '#6B7280';
+        const matiereName = p.chapitres?.matieres?.name || 'Autre';
+        const matiereColor = p.chapitres?.matieres?.color || '#6B7280';
         if (!matiereMap[matiereName]) {
           matiereMap[matiereName] = { name: matiereName, value: 0, color: matiereColor };
         }
