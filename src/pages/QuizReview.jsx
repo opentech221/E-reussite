@@ -363,7 +363,7 @@ export default function QuizReview() {
                             />
                           </Button>
                         </div>
-                        <CardDescription className="flex flex-wrap items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                           <Badge variant="outline">
                             {result.quiz?.chapitres?.matieres?.name || 'Matière'}
                           </Badge>
@@ -374,7 +374,7 @@ export default function QuizReview() {
                             <Calendar className="w-4 h-4" />
                             {new Date(result.completed_at).toLocaleDateString('fr-FR')}
                           </span>
-                        </CardDescription>
+                        </div>
                       </div>
                     </div>
                   </CardHeader>
