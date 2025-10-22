@@ -43,6 +43,7 @@ const CoachIA = lazy(() => import('@/pages/CoachIA'));
 const Settings = lazy(() => import('@/pages/Settings'));
 const MySharedLinks = lazy(() => import('@/pages/MySharedLinks'));
 const PaymentPage = lazy(() => import('@/pages/PaymentPage'));
+const QuizReview = lazy(() => import('@/pages/QuizReview'));
 import AIAssistantSidebar from '@/components/AIAssistantSidebar';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
@@ -87,6 +88,7 @@ function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/quiz" element={<QuizList />} />
               <Route path="/quiz/:quizId" element={<Quiz />} />
+              <Route path="/quiz-review" element={<QuizReview />} />
               <Route path="/exam" element={<ExamList />} />
               <Route path="/exam/:examId" element={<Exam />} />
               <Route path="/leaderboard" element={<Leaderboard />} />

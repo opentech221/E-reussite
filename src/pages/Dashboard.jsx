@@ -1562,7 +1562,7 @@ const Dashboard = () => {
               <CardTitle className="dark:text-slate-100">Actions rapides</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
                 <Link to="/my-courses">
                   <Button variant="outline" className="w-full h-20 flex-col gap-2">
                     <BookOpen className="w-6 h-6" />
@@ -1573,6 +1573,12 @@ const Dashboard = () => {
                   <Button variant="outline" className="w-full h-20 flex-col gap-2">
                     <Target className="w-6 h-6" />
                     <span>Quiz</span>
+                  </Button>
+                </Link>
+                <Link to="/quiz-review">
+                  <Button variant="outline" className="w-full h-20 flex-col gap-2 border-orange-300 hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20">
+                    <span className="text-2xl">📝</span>
+                    <span className="text-orange-600 dark:text-orange-400 font-semibold text-sm">Réviser Quiz</span>
                   </Button>
                 </Link>
                 <Link to="/study-plan">
