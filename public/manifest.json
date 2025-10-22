@@ -67,6 +67,20 @@
       "description": "Voir les défis",
       "url": "/challenges",
       "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Analytics",
+      "short_name": "Analytics",
+      "description": "Voir les statistiques IA",
+      "url": "/analytics",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Social",
+      "short_name": "Social",
+      "description": "Partager et discuter",
+      "url": "/social",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
     }
   ]
 }

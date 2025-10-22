@@ -70,6 +70,14 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       description: 'Tester vos connaissances'
     },
     { 
+      path: '/quiz-review', 
+      icon: GraduationCap, 
+      label: 'Révision Quiz',
+      description: 'Revoir les quiz passés',
+      badge: 'NEW',
+      badgeColor: 'bg-gradient-to-r from-green-500 to-teal-500'
+    },
+    { 
       path: '/exam', 
       icon: FileText, 
       label: 'Examens',

@@ -45,6 +45,7 @@ const MySharedLinks = lazy(() => import('@/pages/MySharedLinks'));
 const PaymentPage = lazy(() => import('@/pages/PaymentPage'));
 const Social = lazy(() => import('@/pages/Social'));
 const AdvancedAnalytics = lazy(() => import('@/pages/AdvancedAnalytics'));
+const QuizReview = lazy(() => import('@/pages/QuizReview'));
 import AIAssistantSidebar from '@/components/AIAssistantSidebar';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import PWAManager from '@/components/PWAManager';
@@ -91,6 +92,7 @@ function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/quiz" element={<QuizList />} />
               <Route path="/quiz/:quizId" element={<Quiz />} />
+              <Route path="/quiz-review" element={<QuizReview />} />
               <Route path="/exam" element={<ExamList />} />
               <Route path="/exam/:examId" element={<Exam />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
