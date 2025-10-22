@@ -22,6 +22,7 @@ import { supabase } from '../lib/customSupabaseClient';
 import { useSubscription } from '@/hooks/useSubscription';
 import TrialCountdownBadge from '@/components/TrialCountdownBadge';
 import StreakBadge from '@/components/StreakBadge';
+import StatCard from '@/components/charts/StatCard';
 
 // ============================================
 // HELPER FUNCTIONS
@@ -925,77 +926,47 @@ const Dashboard = () => {
 
             {/* Overview Tab */}
             <TabsContent value="overview" className="space-y-6">
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                {[
-                  { 
-                    icon: Trophy, 
-                    title: 'Points', 
-                    value: userPoints?.total_points || 0, 
-                    color: 'text-yellow-500 bg-yellow-500/10',
-                    subtitle: `Niveau ${userPoints?.level || 1}`
-                  },
-                  { 
-                    icon: Clock, 
-                    title: 'Temps d\'étude', 
-                    value: `${Math.floor(dashboardData.stats.totalStudyTime / 60)}h ${dashboardData.stats.totalStudyTime % 60}min`, 
-                    color: 'text-blue-500 bg-blue-500/10',
-                    trend: '+12%'
-                  },
-                  { 
-                    icon: Target, 
-                    title: 'Score Moyen', 
-                    value: `${dashboardData.stats.averageScore}%`, 
-                    color: 'text-green-500 bg-green-500/10',
-                    trend: '+5%'
-                  },
-                  { 
-                    icon: BookOpen, 
-                    title: 'Quiz complétés', 
-                    value: userPoints?.quizzes_completed || dashboardData.stats.quizCompleted || 0, 
-                    color: 'text-purple-500 bg-purple-500/10',
-                    trend: '+2'
-                  },
-                  { 
-                    icon: Award, 
-                    title: 'Badges gagnés', 
-                    value: userBadges?.length || 0, 
-                    color: 'text-orange-500 bg-orange-500/10',
-                    trend: `+${userBadges?.length || 0}`
-                  }
-                ].map((stat, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Card className="hover:shadow-lg dark:bg-slate-800 dark:border-white/20 border-2 shadow-[0_0_16px_0_rgba(34,197,94,0.18)] dark:shadow-[0_0_24px_0_rgba(34,197,94,0.25)] dark:hover:shadow-[0_0_35px_rgba(34,197,94,0.25)] transition-all duration-300">
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">{stat.title}</p>
-                            <p className="text-2xl font-bold text-slate-900 dark:text-white">{stat.value}</p>
-                            {stat.subtitle && (
-                              <p className="text-sm text-slate-500 mt-1">
-                                {stat.subtitle}
-                              </p>
-                            )}
-                            {stat.trend && (
-                              <p className="text-sm text-green-600 mt-1">
-                                <TrendingUp className="w-3 h-3 inline mr-1" />
-                                {stat.trend} cette semaine
-                              </p>
-                            )}
-                          </div>
-                          <div className={`w-12 h-12 rounded-lg ${stat.color} flex items-center justify-center`}>
-                            <stat.icon className="w-6 h-6" />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
+              {/* ✨ Statistics Grid - 4 KPI Cards avec StatCard component */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* KPI Card 1: Quiz Complétés */}
+                <StatCard
+                  title="Quiz complétés"
+                  value={(userPoints?.quizzes_completed || dashboardData.stats.quizCompleted || 0).toString()}
+                  change="+5 cette semaine"
+                  changeType="increase"
+                  icon={BookOpen}
+                  color="blue"
+                />
+                
+                {/* KPI Card 2: Temps d'Étude */}
+                <StatCard
+                  title="Temps d'étude"
+                  value={`${Math.floor((dashboardData.stats.totalStudyTime || 0) / 60)}h${Math.floor(((dashboardData.stats.totalStudyTime || 0) % 60)).toString().padStart(2, '0')}`}
+                  change="+2h30 vs semaine dernière"
+                  changeType="increase"
+                  icon={Clock}
+                  color="green"
+                />
+                
+                {/* KPI Card 3: Streak Actuel */}
+                <StatCard
+                  title="Streak actuel"
+                  value={`${userPoints?.current_streak || dashboardData.stats.currentStreak || 0}j`}
+                  change={(userPoints?.current_streak || dashboardData.stats.currentStreak || 0) > 0 ? "En feu ! 🔥" : "Commencer aujourd'hui"}
+                  changeType={(userPoints?.current_streak || dashboardData.stats.currentStreak || 0) > 0 ? "increase" : "decrease"}
+                  icon={Flame}
+                  color="orange"
+                />
+                
+                {/* KPI Card 4: Score Moyen */}
+                <StatCard
+                  title="Score moyen"
+                  value={`${Math.round(dashboardData.stats.averageScore || 0)}%`}
+                  change="+3.5% vs mois dernier"
+                  changeType="increase"
+                  icon={TrendingUp}
+                  color="purple"
+                />
               </div>
 
               {/* ✅ AJOUT: Carte statistiques examens */}

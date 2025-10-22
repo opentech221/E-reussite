@@ -1,27 +1,29 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
-import { LucideIcon } from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
 /**
  * StatCard - Carte KPI réutilisable pour le Dashboard
  * 
  * @param {string} title - Titre de la statistique
  * @param {string|number} value - Valeur à afficher
- * @param {LucideIcon} icon - Icône Lucide React
+ * @param {React.Component} icon - Icône Lucide React
  * @param {string} color - Couleur (blue, green, purple, orange)
- * @param {string} trend - Tendance optionnelle (ex: "+12%")
+ * @param {string} change - Texte de changement (ex: "+12%", "+5 cette semaine")
+ * @param {string} changeType - Type de changement: "increase" ou "decrease"
  * @param {string} subtitle - Sous-titre optionnel
- * @param {number} delay - Délai animation (ms)
+ * @param {string} className - Classes CSS additionnelles
  */
 const StatCard = ({ 
   title, 
   value, 
   icon: Icon, 
   color = 'blue', 
-  trend, 
+  change,
+  changeType = 'increase',
   subtitle,
-  delay = 0 
+  className = ''
 }) => {
   // Mapping des couleurs
   const colorClasses = {
@@ -64,55 +66,48 @@ const StatCard = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ 
-        duration: 0.4, 
-        delay: delay / 1000,
+        duration: 0.3,
         ease: [0.4, 0, 0.2, 1]
       }}
+      className={className}
     >
-      <Card className={`relative overflow-hidden border-2 ${colors.border} hover:shadow-lg transition-shadow duration-300`}>
-        {/* Background pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-current to-transparent" />
-        </div>
+      <Card className={`relative overflow-hidden border-2 ${colors.border} hover:shadow-lg hover:scale-105 transition-all duration-300`}>
+        {/* Background gradient */}
+        <div className={`absolute inset-0 ${colors.bg} opacity-50`} />
 
         <CardContent className="p-6 relative">
-          <div className="flex items-start justify-between">
+          <div className="flex items-center justify-between mb-4">
             {/* Icône */}
-            <div className={`p-3 rounded-xl ${colors.bg} ${colors.icon}`}>
-              <Icon className="h-6 w-6" />
+            <div className={`p-3 rounded-xl ${colors.bg} border ${colors.border}`}>
+              <Icon className={`h-6 w-6 ${colors.icon}`} />
             </div>
 
-            {/* Trend badge (optionnel) */}
-            {trend && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: (delay / 1000) + 0.2, type: 'spring' }}
-                className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                  trend.startsWith('+') 
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
-                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                }`}
-              >
-                {trend}
-              </motion.div>
+            {/* Change indicator (optionnel) */}
+            {change && (
+              <div className={`flex items-center gap-1 text-sm font-medium ${
+                changeType === 'increase' 
+                  ? 'text-green-600 dark:text-green-400' 
+                  : 'text-red-600 dark:text-red-400'
+              }`}>
+                {changeType === 'increase' ? (
+                  <TrendingUp className="h-4 w-4" />
+                ) : (
+                  <TrendingDown className="h-4 w-4" />
+                )}
+                <span className="text-xs">{change}</span>
+              </div>
             )}
           </div>
 
-          {/* Titre */}
-          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mt-4 mb-1">
-            {title}
-          </h3>
-
           {/* Valeur principale */}
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: (delay / 1000) + 0.1 }}
-            className={`text-3xl font-bold ${colors.text} mb-1`}
-          >
+          <div className={`text-3xl font-bold ${colors.text} mb-2`}>
             {value}
-          </motion.div>
+          </div>
+
+          {/* Titre */}
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            {title}
+          </p>
 
           {/* Sous-titre (optionnel) */}
           {subtitle && (
