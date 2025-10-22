@@ -45,12 +45,14 @@ const MySharedLinks = lazy(() => import('@/pages/MySharedLinks'));
 const PaymentPage = lazy(() => import('@/pages/PaymentPage'));
 import AIAssistantSidebar from '@/components/AIAssistantSidebar';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import PWAManager from '@/components/PWAManager';
 
 function App() {
   console.log('🚀 [App] Application démarrée');
   
   return (
     <>
+      <PWAManager />
       <Toaster 
         position="top-right" 
         expand={true}
