@@ -67,14 +67,7 @@ const Social = () => {
       // 2. Récupérer badges récents
       const { data: badgesData } = await supabase
         .from('user_badges')
-        .select(`
-          *,
-          badges:badge_id (
-            name,
-            description,
-            icon
-          )
-        `)
+        .select('badge_name, earned_at')
         .eq('user_id', user.id)
         .order('earned_at', { ascending: false })
         .limit(5);
@@ -132,10 +125,10 @@ const Social = () => {
   };
 
   const shareAchievement = (achievement) => {
-    const text = `🎉 J'ai obtenu le badge "${achievement.badges.name}" sur E-Réussite ! ${achievement.badges.description}`;
+    const text = `🎉 J'ai obtenu le badge "${achievement.badge_name}" sur E-Réussite !`;
     const url = `${window.location.origin}/profile/${user.id}`;
     
-    trackEvent('share_achievement', { user_id: user.id, badge_id: achievement.badge_id });
+    trackEvent('share_achievement', { user_id: user.id, badge_name: achievement.badge_name });
 
     // Partage natif si disponible
     if (navigator.share) {
@@ -340,15 +333,15 @@ const Social = () => {
                     Pas encore de badges
                   </p>
                 ) : (
-                  recentAchievements.map(achievement => (
+                  recentAchievements.map((achievement, index) => (
                     <div 
-                      key={achievement.id}
+                      key={`${achievement.badge_name}-${index}`}
                       className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:shadow-md transition-shadow"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="text-2xl">{achievement.badges.icon}</div>
+                        <div className="text-2xl">🏆</div>
                         <div>
-                          <p className="font-semibold text-sm">{achievement.badges.name}</p>
+                          <p className="font-semibold text-sm">{achievement.badge_name}</p>
                           <p className="text-xs text-gray-600 dark:text-gray-400">
                             {new Date(achievement.earned_at).toLocaleDateString('fr-FR')}
                           </p>
