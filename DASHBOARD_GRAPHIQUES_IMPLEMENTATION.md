@@ -207,11 +207,16 @@ ORDER BY date ASC;
 
 ## 📝 NOTES DE DÉVELOPPEMENT
 
-### **22 octobre 2025 - Démarrage**
-- ✅ Branche créée
-- ✅ Audit Dashboard.jsx
+### **22 octobre 2025 - Session 1 (23h20-00h45)**
+- ✅ Branche `feature/dashboard-graphs` créée
+- ✅ Audit Dashboard.jsx (1440 lignes)
 - ✅ KPIs identifiés (quiz, temps, streak, score)
-- ⏳ Prochaine étape : Vérifier recharts + créer StatCard
+- ✅ recharts@3.2.1 vérifié (déjà installé)
+- ✅ StatCard.jsx créé (132 lignes)
+- ✅ 4 KPI Cards intégrées dans Dashboard
+- ✅ Bug fix: Import LucideIcon corrigé
+- ✅ Commit b4baa188: "integrate 4 KPI cards"
+- ⏳ Prochaine étape : DonutChart (Jour 2 matin)
 
 ---
 
@@ -236,9 +241,9 @@ git push origin feature/dashboard-graphs
 
 ---
 
-**Temps investi** : 0h30 (audit + setup)  
-**Temps restant** : 31h30 / 32h
+**Temps investi** : 1h25 (audit + StatCard + intégration + bug fix)  
+**Temps restant** : 30h35 / 32h
 
 ---
 
-**Dernière mise à jour** : 22 octobre 2025 - 23h55
+**Dernière mise à jour** : 23 octobre 2025 - 00h45
