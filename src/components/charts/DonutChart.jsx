@@ -64,16 +64,46 @@ const DonutChart = ({
     return `${percent}%`;
   };
 
-  // Custom tooltip
+  // Custom tooltip avec styling premium
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       const data = payload[0];
+      const percent = ((data.value / total) * 100).toFixed(2);
+      const average = (total / payload.length).toFixed(1);
+      const deviation = ((data.value - average) / average * 100).toFixed(1);
+      const isAboveAverage = data.value >= average;
+      
       return (
-        <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-          <p className="font-semibold text-gray-900 dark:text-white">{data.name}</p>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            {data.value}h - {((data.value / total) * 100).toFixed(1)}%
-          </p>
+        <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 p-4 rounded-xl shadow-2xl border-2 border-gray-200 dark:border-gray-700 backdrop-blur-sm">
+          {/* Titre avec couleur de la matière */}
+          <div className="flex items-center gap-2 mb-2">
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{ backgroundColor: data.payload.color || data.color }}
+            />
+            <p className="font-bold text-gray-900 dark:text-white">{data.name}</p>
+          </div>
+          
+          {/* Valeur principale */}
+          <div className="space-y-1 text-sm">
+            <p className="text-gray-700 dark:text-gray-200 font-semibold">
+              ⏱️ {data.value}h ({percent}%)
+            </p>
+            
+            {/* Comparaison avec la moyenne */}
+            <p className={`text-xs flex items-center gap-1 ${
+              isAboveAverage 
+                ? 'text-green-600 dark:text-green-400' 
+                : 'text-orange-600 dark:text-orange-400'
+            }`}>
+              {isAboveAverage ? '↑' : '↓'} {Math.abs(deviation)}% vs moyenne ({average}h)
+            </p>
+            
+            {/* Indicateur de performance */}
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+              {isAboveAverage ? '✨ Matière prioritaire' : '💡 À renforcer'}
+            </p>
+          </div>
         </div>
       );
     }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -28,6 +28,16 @@ import StudyTimeBarChart from '@/components/charts/StudyTimeBarChart';
 import StreakAreaChart from '@/components/charts/StreakAreaChart';
 import PeriodFilter from '@/components/charts/PeriodFilter';
 import ChartSkeleton from '@/components/charts/ChartSkeleton';
+import ExportDashboardPDF from '@/components/ExportDashboardPDF';
+import { 
+  trackDashboardVisit, 
+  trackPeriodChange, 
+  trackChartView, 
+  trackExportPDF,
+  trackButtonClick,
+  trackSessionStart,
+  trackSessionEnd
+} from '@/lib/analytics';
 
 // ============================================
 // HELPER FUNCTIONS
@@ -452,6 +462,7 @@ const Dashboard = () => {
   const { user, userProfile, loading: authLoading, getGamificationStatus, getLearningRecommendations } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const dashboardRef = useRef(null); // Ref pour export PDF
   const [dashboardData, setDashboardData] = useState(null);
   const [gamificationData, setGamificationData] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
@@ -472,6 +483,13 @@ const Dashboard = () => {
   const [streakHistory, setStreakHistory] = useState([]);
   const [chartsLoading, setChartsLoading] = useState(false);
 
+  // Handler pour le changement de période avec analytics
+  const handlePeriodChange = (newPeriod) => {
+    setPeriod(newPeriod);
+    const userId = user?.id || user?.email || 'anonymous';
+    trackPeriodChange(newPeriod, userId);
+  };
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/login');
@@ -479,6 +497,20 @@ const Dashboard = () => {
 
     if (user && userProfile) {
       fetchDashboardData();
+      
+      // 📊 Analytics: Dashboard visit tracking
+      const userId = user?.id || user?.email || 'anonymous';
+      trackDashboardVisit(userId, 'overview');
+      
+      // Session tracking
+      const sessionStart = Date.now();
+      trackSessionStart(userId);
+      
+      // Track session end on unmount
+      return () => {
+        const sessionDuration = Math.floor((Date.now() - sessionStart) / 1000);
+        trackSessionEnd(userId, sessionDuration);
+      };
     }
   }, [user, userProfile, authLoading, navigate]);
 
@@ -858,6 +890,12 @@ const Dashboard = () => {
   useEffect(() => {
     if (user && userPoints) {
       fetchChartData();
+      
+      // 📊 Analytics: Track chart views when data is loaded
+      const userId = user?.id || user?.email || 'anonymous';
+      if (matiereDistribution?.length > 0) trackChartView('donut', userId);
+      if (dailyStudyTime?.length > 0) trackChartView('bar', userId);
+      if (streakHistory?.length > 0) trackChartView('area', userId);
     }
   }, [period, user, userPoints]);
 
@@ -946,7 +984,7 @@ const Dashboard = () => {
         {/* Trial Countdown Badge - Visible pour les utilisateurs en essai ou expiré */}
         <TrialCountdownBadge />
         
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main ref={dashboardRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Welcome Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -1075,12 +1113,19 @@ const Dashboard = () => {
                 />
               </div>
 
-              {/* 📊 Filtre de période */}
-              <div className="flex justify-between items-center">
+              {/* 📊 Filtre de période + Export PDF */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                   Statistiques détaillées
                 </h2>
-                <PeriodFilter period={period} onPeriodChange={setPeriod} />
+                <div className="flex items-center gap-3">
+                  <ExportDashboardPDF 
+                    dashboardRef={dashboardRef}
+                    userName={userProfile?.full_name || user?.email?.split('@')[0] || 'Utilisateur'}
+                    userId={user?.id || user?.email}
+                  />
+                  <PeriodFilter period={period} onPeriodChange={handlePeriodChange} />
+                </div>
               </div>
 
               {/* 📊 Graphiques - Grid 2 colonnes */}

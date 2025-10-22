@@ -47,18 +47,61 @@ const StudyTimeBarChart = ({
   const totalMinutes = data.reduce((sum, item) => sum + (item.minutes || 0), 0);
   const averageMinutes = Math.round(totalMinutes / data.length);
 
-  // Custom tooltip
-  const CustomTooltip = ({ active, payload }) => {
+  // Custom tooltip avec styling premium et comparaisons
+  const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       const data = payload[0];
       const hours = Math.floor(data.value / 60);
       const minutes = data.value % 60;
+      const deviation = ((data.value - averageMinutes) / averageMinutes * 100).toFixed(1);
+      const isAboveAverage = data.value >= averageMinutes;
+      
+      // Déterminer le jour de la semaine complet
+      const dayMap = {
+        'Lun': 'Lundi', 'Mar': 'Mardi', 'Mer': 'Mercredi', 'Jeu': 'Jeudi',
+        'Ven': 'Vendredi', 'Sam': 'Samedi', 'Dim': 'Dimanche'
+      };
+      const fullDay = dayMap[data.payload.day] || data.payload.day;
+      
       return (
-        <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-          <p className="font-semibold text-gray-900 dark:text-white">{data.payload.day}</p>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            {hours > 0 && `${hours}h `}{minutes}min
-          </p>
+        <div className="bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-blue-950 p-4 rounded-xl shadow-2xl border-2 border-blue-200 dark:border-blue-700 backdrop-blur-sm min-w-[200px]">
+          {/* Jour */}
+          <div className="mb-2">
+            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+              {fullDay}
+            </p>
+          </div>
+          
+          {/* Temps principal */}
+          <div className="mb-3">
+            <p className="text-2xl font-bold text-primary">
+              {hours > 0 && `${hours}h `}
+              {minutes > 0 && `${minutes}min`}
+              {hours === 0 && minutes === 0 && '0min'}
+            </p>
+          </div>
+          
+          {/* Comparaison avec la moyenne */}
+          <div className="space-y-2 text-xs">
+            <div className={`flex items-center justify-between p-2 rounded-lg ${
+              isAboveAverage 
+                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' 
+                : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
+            }`}>
+              <span>{isAboveAverage ? '↑' : '↓'} {Math.abs(deviation)}%</span>
+              <span className="font-semibold">vs moyenne</span>
+            </div>
+            
+            {/* Moyenne */}
+            <p className="text-gray-600 dark:text-gray-400 text-center">
+              📊 Moyenne: {Math.floor(averageMinutes / 60)}h {averageMinutes % 60}min
+            </p>
+            
+            {/* Encouragement */}
+            <p className="text-center font-medium pt-2 border-t border-gray-200 dark:border-gray-700">
+              {isAboveAverage ? '🔥 Excellent !' : '💪 Continue !'}
+            </p>
+          </div>
         </div>
       );
     }
