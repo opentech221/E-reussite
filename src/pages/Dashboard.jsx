@@ -811,18 +811,25 @@ const Dashboard = () => {
       daysAgo.setDate(daysAgo.getDate() - period);
 
       // 1. Répartition par matière (Donut Chart)
+      // Note: user_progress n'a pas de colonne updated_at, on récupère toutes les données
       const { data: progressData } = await supabase
         .from('user_progress')
         .select(`
           time_spent,
+          created_at,
           chapitres:chapitre_id (
             matieres:matiere_id (
               name
             )
           )
         `)
-        .eq('user_id', user.id)
-        .gte('updated_at', daysAgo.toISOString());
+        .eq('user_id', user.id);
+
+      // Filtrer par date côté client si created_at existe
+      const filteredProgressData = progressData?.filter(p => {
+        if (!p.created_at) return true;
+        return new Date(p.created_at) >= daysAgo;
+      }) || [];
 
       // Couleurs par défaut pour les matières
       const defaultColors = {
@@ -838,7 +845,7 @@ const Dashboard = () => {
 
       // Aggréger par matière
       const matiereMap = {};
-      progressData?.forEach(p => {
+      filteredProgressData.forEach(p => {
         const matiereName = p.chapitres?.matieres?.name || 'Autre';
         const matiereColor = defaultColors[matiereName] || '#6B7280';
         if (!matiereMap[matiereName]) {
@@ -854,8 +861,8 @@ const Dashboard = () => {
       const dailyMap = {};
       const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
       
-      progressData?.forEach(p => {
-        const date = new Date(p.updated_at);
+      filteredProgressData.forEach(p => {
+        const date = p.created_at ? new Date(p.created_at) : new Date();
         const dayKey = date.toLocaleDateString('fr-FR');
         if (!dailyMap[dayKey]) {
           dailyMap[dayKey] = {
