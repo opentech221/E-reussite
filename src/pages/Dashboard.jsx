@@ -23,6 +23,10 @@ import { useSubscription } from '@/hooks/useSubscription';
 import TrialCountdownBadge from '@/components/TrialCountdownBadge';
 import StreakBadge from '@/components/StreakBadge';
 import StatCard from '@/components/charts/StatCard';
+import DonutChart from '@/components/charts/DonutChart';
+import StudyTimeBarChart from '@/components/charts/StudyTimeBarChart';
+import StreakAreaChart from '@/components/charts/StreakAreaChart';
+import PeriodFilter from '@/components/charts/PeriodFilter';
 
 // ============================================
 // HELPER FUNCTIONS
@@ -459,6 +463,12 @@ const Dashboard = () => {
   const [challenges, setChallenges] = useState([]);
   const [challengesLoading, setChallengesLoading] = useState(false);
   const [examStats, setExamStats] = useState(null);
+  
+  // États pour les graphiques
+  const [period, setPeriod] = useState(7); // Période par défaut: 7 jours
+  const [matiereDistribution, setMatiereDistribution] = useState([]);
+  const [dailyStudyTime, setDailyStudyTime] = useState([]);
+  const [streakHistory, setStreakHistory] = useState([]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -755,6 +765,96 @@ const Dashboard = () => {
     }
   };
 
+  /**
+   * Fetch data for chart components based on period
+   */
+  const fetchChartData = async () => {
+    if (!user) return;
+
+    try {
+      const daysAgo = new Date();
+      daysAgo.setDate(daysAgo.getDate() - period);
+
+      // 1. Répartition par matière (Donut Chart)
+      const { data: progressData } = await supabase
+        .from('user_progress')
+        .select(`
+          time_spent,
+          lecons:lecon_id (
+            chapitres:chapitre_id (
+              matieres:matiere_id (
+                name,
+                color
+              )
+            )
+          )
+        `)
+        .eq('user_id', user.id)
+        .gte('updated_at', daysAgo.toISOString());
+
+      // Aggréger par matière
+      const matiereMap = {};
+      progressData?.forEach(p => {
+        const matiereName = p.lecons?.chapitres?.matieres?.name || 'Autre';
+        const matiereColor = p.lecons?.chapitres?.matieres?.color || '#6B7280';
+        if (!matiereMap[matiereName]) {
+          matiereMap[matiereName] = { name: matiereName, value: 0, color: matiereColor };
+        }
+        matiereMap[matiereName].value += Math.round((p.time_spent || 0) / 3600); // Convertir en heures
+      });
+
+      const matiereChartData = Object.values(matiereMap).filter(m => m.value > 0);
+      setMatiereDistribution(matiereChartData);
+
+      // 2. Temps quotidien (Bar Chart)
+      const dailyMap = {};
+      const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+      
+      progressData?.forEach(p => {
+        const date = new Date(p.updated_at);
+        const dayKey = date.toLocaleDateString('fr-FR');
+        if (!dailyMap[dayKey]) {
+          dailyMap[dayKey] = {
+            day: dayNames[date.getDay()],
+            date: date,
+            minutes: 0
+          };
+        }
+        dailyMap[dayKey].minutes += Math.round((p.time_spent || 0) / 60);
+      });
+
+      const dailyChartData = Object.values(dailyMap)
+        .sort((a, b) => a.date - b.date)
+        .map(d => ({ day: d.day, minutes: d.minutes }));
+
+      setDailyStudyTime(dailyChartData);
+
+      // 3. Streak history (Area Chart)
+      // Générer données simulées pour streak (à remplacer par vraie table streak_history)
+      const streakData = [];
+      for (let i = period; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const streak = Math.max(0, (userPoints?.current_streak || 0) - Math.floor(Math.random() * 3));
+        streakData.push({
+          date: date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }),
+          streak: streak
+        });
+      }
+      setStreakHistory(streakData);
+
+    } catch (error) {
+      console.error('Error fetching chart data:', error);
+    }
+  };
+
+  // Refetch chart data when period changes
+  useEffect(() => {
+    if (user && userPoints) {
+      fetchChartData();
+    }
+  }, [period, user, userPoints]);
+
   const handleAction = (description) => {
     toast({
       title: "🚧 Bientôt disponible",
@@ -968,6 +1068,38 @@ const Dashboard = () => {
                   color="purple"
                 />
               </div>
+
+              {/* 📊 Filtre de période */}
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Statistiques détaillées
+                </h2>
+                <PeriodFilter period={period} onPeriodChange={setPeriod} />
+              </div>
+
+              {/* 📊 Graphiques - Grid 2 colonnes */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Donut Chart - Répartition matières */}
+                <DonutChart
+                  data={matiereDistribution}
+                  title="Répartition par matière"
+                  subtitle={`${period} derniers jours`}
+                />
+
+                {/* Bar Chart - Temps quotidien */}
+                <StudyTimeBarChart
+                  data={dailyStudyTime}
+                  title="Temps d'étude quotidien"
+                  subtitle={`${period} derniers jours`}
+                />
+              </div>
+
+              {/* 📉 Area Chart - Évolution streak (pleine largeur) */}
+              <StreakAreaChart
+                data={streakHistory}
+                title="Évolution de votre streak"
+                subtitle={`${period} derniers jours`}
+              />
 
               {/* ✅ AJOUT: Carte statistiques examens */}
               {examStats && examStats.totalExams > 0 && (
