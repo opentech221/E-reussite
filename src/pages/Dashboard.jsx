@@ -29,6 +29,7 @@ import StreakAreaChart from '@/components/charts/StreakAreaChart';
 import PeriodFilter from '@/components/charts/PeriodFilter';
 import ChartSkeleton from '@/components/charts/ChartSkeleton';
 import ExportDashboardPDF from '@/components/ExportDashboardPDF';
+import StreakCalendar from '@/components/StreakCalendar';
 import { 
   trackDashboardVisit, 
   trackPeriodChange, 
@@ -481,6 +482,7 @@ const Dashboard = () => {
   const [matiereDistribution, setMatiereDistribution] = useState([]);
   const [dailyStudyTime, setDailyStudyTime] = useState([]);
   const [streakHistory, setStreakHistory] = useState([]);
+  const [streakCalendarData, setStreakCalendarData] = useState([]);
   const [chartsLoading, setChartsLoading] = useState(false);
 
   // Handler pour le changement de période avec analytics
@@ -879,6 +881,16 @@ const Dashboard = () => {
 
       setStreakHistory(streakData);
 
+      // 4. Streak Calendar Data (90 jours pour calendrier)
+      const { data: calendarData } = await supabase
+        .from('streak_history')
+        .select('date, streak_value')
+        .eq('user_id', user.id)
+        .gte('date', new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+        .order('date', { ascending: false });
+
+      setStreakCalendarData(calendarData || []);
+
     } catch (error) {
       console.error('Error fetching chart data:', error);
     } finally {
@@ -1049,7 +1061,7 @@ const Dashboard = () => {
           </motion.div>
 
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4 overflow-x-auto scrollbar-hide gap-1">
+            <TabsList className="grid w-full grid-cols-5 overflow-x-auto scrollbar-hide gap-1">
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <LayoutDashboard className="h-4 w-4" />
                 <span className="hidden sm:inline">Vue d'ensemble</span>
@@ -1057,6 +1069,10 @@ const Dashboard = () => {
               <TabsTrigger value="progress" className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
                 <span className="hidden sm:inline">Progression</span>
+              </TabsTrigger>
+              <TabsTrigger value="streak" className="flex items-center gap-2">
+                <Flame className="h-4 w-4" />
+                <span className="hidden sm:inline">Streak</span>
               </TabsTrigger>
               <TabsTrigger value="analytics" className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
@@ -1479,6 +1495,19 @@ const Dashboard = () => {
                   </Card>
                 )}
               </div>
+            </TabsContent>
+
+            {/* Streak Tab */}
+            <TabsContent value="streak" className="space-y-6">
+              {chartsLoading ? (
+                <ChartSkeleton type="calendar" />
+              ) : (
+                <StreakCalendar 
+                  data={streakCalendarData}
+                  currentStreak={userPoints?.current_streak || 0}
+                  longestStreak={userPoints?.longest_streak || 0}
+                />
+              )}
             </TabsContent>
 
             {/* Analytics Tab */}
