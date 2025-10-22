@@ -49,16 +49,93 @@ const StreakAreaChart = ({
   const currentStreak = streaks[streaks.length - 1] || 0;
   const avgStreak = Math.round(streaks.reduce((sum, s) => sum + s, 0) / streaks.length);
 
-  // Custom tooltip
-  const CustomTooltip = ({ active, payload }) => {
+  // Custom tooltip avec analyse de tendance et statistiques
+  const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       const data = payload[0];
+      const currentValue = data.value;
+      const index = data.payload.index || 0;
+      
+      // Tendance (comparer avec jour précédent)
+      let trend = null;
+      let trendValue = 0;
+      if (index > 0 && streaks[index - 1] !== undefined) {
+        trendValue = currentValue - streaks[index - 1];
+        trend = trendValue > 0 ? 'up' : trendValue < 0 ? 'down' : 'stable';
+      }
+      
+      // Pourcentage par rapport au max
+      const percentOfMax = ((currentValue / maxStreak) * 100).toFixed(1);
+      
+      // Comparaison avec la moyenne
+      const deviation = ((currentValue - avgStreak) / avgStreak * 100).toFixed(1);
+      const isAboveAverage = currentValue >= avgStreak;
+      
       return (
-        <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-          <p className="font-semibold text-gray-900 dark:text-white">{data.payload.date}</p>
-          <p className="text-sm text-orange-600 dark:text-orange-400">
-            🔥 {data.value} jours
-          </p>
+        <div className="bg-gradient-to-br from-white to-orange-50 dark:from-gray-800 dark:to-orange-950 p-4 rounded-xl shadow-2xl border-2 border-orange-200 dark:border-orange-700 backdrop-blur-sm min-w-[220px]">
+          {/* Date */}
+          <div className="mb-2">
+            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+              {data.payload.date}
+            </p>
+          </div>
+          
+          {/* Streak principal avec flame */}
+          <div className="mb-3 flex items-center gap-2">
+            <Flame className="h-6 w-6 text-orange-500" />
+            <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+              {currentValue} {currentValue <= 1 ? 'jour' : 'jours'}
+            </p>
+          </div>
+          
+          {/* Tendance */}
+          {trend && (
+            <div className={`flex items-center gap-2 mb-2 p-2 rounded-lg ${
+              trend === 'up' 
+                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                : trend === 'down'
+                ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+            }`}>
+              <span className="text-lg">
+                {trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→'}
+              </span>
+              <span className="text-xs font-semibold">
+                {trend === 'up' ? `+${trendValue}` : trend === 'down' ? trendValue : '0'} vs hier
+              </span>
+            </div>
+          )}
+          
+          {/* Statistiques comparatives */}
+          <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between">
+              <span>📊 Moyenne:</span>
+              <span className="font-semibold">{avgStreak}j</span>
+            </div>
+            <div className="flex justify-between">
+              <span>🏆 Record:</span>
+              <span className="font-semibold text-orange-600 dark:text-orange-400">{maxStreak}j</span>
+            </div>
+            <div className="flex justify-between">
+              <span>� % du record:</span>
+              <span className="font-semibold">{percentOfMax}%</span>
+            </div>
+          </div>
+          
+          {/* Badge de performance */}
+          <div className={`mt-3 text-center text-xs font-bold py-2 px-3 rounded-lg ${
+            currentValue >= maxStreak * 0.8
+              ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white'
+              : currentValue >= avgStreak
+              ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
+              : 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white'
+          }`}>
+            {currentValue >= maxStreak * 0.8 
+              ? '🔥 EN FEU !' 
+              : currentValue >= avgStreak 
+              ? '✨ Super forme !'
+              : '💪 Continue !'}
+          </div>
         </div>
       );
     }
