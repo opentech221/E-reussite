@@ -811,12 +811,11 @@ const Dashboard = () => {
       daysAgo.setDate(daysAgo.getDate() - period);
 
       // 1. Répartition par matière (Donut Chart)
-      // Note: user_progress n'a pas de colonne updated_at, on récupère toutes les données
+      // Note: user_progress n'a pas de colonnes de date, on récupère toutes les données
       const { data: progressData } = await supabase
         .from('user_progress')
         .select(`
           time_spent,
-          created_at,
           chapitres:chapitre_id (
             matieres:matiere_id (
               name
@@ -824,12 +823,6 @@ const Dashboard = () => {
           )
         `)
         .eq('user_id', user.id);
-
-      // Filtrer par date côté client si created_at existe
-      const filteredProgressData = progressData?.filter(p => {
-        if (!p.created_at) return true;
-        return new Date(p.created_at) >= daysAgo;
-      }) || [];
 
       // Couleurs par défaut pour les matières
       const defaultColors = {
@@ -845,7 +838,7 @@ const Dashboard = () => {
 
       // Aggréger par matière
       const matiereMap = {};
-      filteredProgressData.forEach(p => {
+      progressData?.forEach(p => {
         const matiereName = p.chapitres?.matieres?.name || 'Autre';
         const matiereColor = defaultColors[matiereName] || '#6B7280';
         if (!matiereMap[matiereName]) {
@@ -858,21 +851,25 @@ const Dashboard = () => {
       setMatiereDistribution(matiereChartData);
 
       // 2. Temps quotidien (Bar Chart)
+      // Note: Sans colonne de date dans user_progress, on répartit le temps total sur les derniers jours
       const dailyMap = {};
       const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
       
-      filteredProgressData.forEach(p => {
-        const date = p.created_at ? new Date(p.created_at) : new Date();
+      // Calculer le temps total
+      const totalMinutes = progressData?.reduce((sum, p) => sum + Math.round((p.time_spent || 0) / 60), 0) || 0;
+      const avgMinutesPerDay = Math.round(totalMinutes / 7);
+      
+      // Générer des données moyennes pour les 7 derniers jours
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
         const dayKey = date.toLocaleDateString('fr-FR');
-        if (!dailyMap[dayKey]) {
-          dailyMap[dayKey] = {
-            day: dayNames[date.getDay()],
-            date: date,
-            minutes: 0
-          };
-        }
-        dailyMap[dayKey].minutes += Math.round((p.time_spent || 0) / 60);
-      });
+        dailyMap[dayKey] = {
+          day: dayNames[date.getDay()],
+          date: date,
+          minutes: avgMinutesPerDay
+        };
+      }
 
       const dailyChartData = Object.values(dailyMap)
         .sort((a, b) => a.date - b.date)
