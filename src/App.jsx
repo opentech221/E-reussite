@@ -44,6 +44,7 @@ const Settings = lazy(() => import('@/pages/Settings'));
 const MySharedLinks = lazy(() => import('@/pages/MySharedLinks'));
 const PaymentPage = lazy(() => import('@/pages/PaymentPage'));
 const Social = lazy(() => import('@/pages/Social'));
+const AdvancedAnalytics = lazy(() => import('@/pages/AdvancedAnalytics'));
 import AIAssistantSidebar from '@/components/AIAssistantSidebar';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
@@ -100,6 +101,7 @@ function App() {
               <Route path="/settings" element={<Settings />} />
               <Route path="/my-shared-links" element={<MySharedLinks />} />
               <Route path="/social" element={<Social />} />
+              <Route path="/analytics" element={<AdvancedAnalytics />} />
               <Route path="/payment" element={<PaymentPage />} />
               <Route path="/test-debug" element={<TestProgressionDebug />} />
             </Route>
