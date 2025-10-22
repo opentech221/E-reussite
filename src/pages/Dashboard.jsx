@@ -27,6 +27,7 @@ import DonutChart from '@/components/charts/DonutChart';
 import StudyTimeBarChart from '@/components/charts/StudyTimeBarChart';
 import StreakAreaChart from '@/components/charts/StreakAreaChart';
 import PeriodFilter from '@/components/charts/PeriodFilter';
+import ChartSkeleton from '@/components/charts/ChartSkeleton';
 
 // ============================================
 // HELPER FUNCTIONS
@@ -469,6 +470,7 @@ const Dashboard = () => {
   const [matiereDistribution, setMatiereDistribution] = useState([]);
   const [dailyStudyTime, setDailyStudyTime] = useState([]);
   const [streakHistory, setStreakHistory] = useState([]);
+  const [chartsLoading, setChartsLoading] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -771,6 +773,7 @@ const Dashboard = () => {
   const fetchChartData = async () => {
     if (!user) return;
 
+    setChartsLoading(true);
     try {
       const daysAgo = new Date();
       daysAgo.setDate(daysAgo.getDate() - period);
@@ -846,6 +849,8 @@ const Dashboard = () => {
 
     } catch (error) {
       console.error('Error fetching chart data:', error);
+    } finally {
+      setChartsLoading(false);
     }
   };
 
@@ -1081,26 +1086,38 @@ const Dashboard = () => {
               {/* 📊 Graphiques - Grid 2 colonnes */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Donut Chart - Répartition matières */}
-                <DonutChart
-                  data={matiereDistribution}
-                  title="Répartition par matière"
-                  subtitle={`${period} derniers jours`}
-                />
+                {chartsLoading ? (
+                  <ChartSkeleton type="donut" />
+                ) : (
+                  <DonutChart
+                    data={matiereDistribution}
+                    title="Répartition par matière"
+                    subtitle={`${period} derniers jours`}
+                  />
+                )}
 
                 {/* Bar Chart - Temps quotidien */}
-                <StudyTimeBarChart
-                  data={dailyStudyTime}
-                  title="Temps d'étude quotidien"
-                  subtitle={`${period} derniers jours`}
-                />
+                {chartsLoading ? (
+                  <ChartSkeleton type="bar" />
+                ) : (
+                  <StudyTimeBarChart
+                    data={dailyStudyTime}
+                    title="Temps d'étude quotidien"
+                    subtitle={`${period} derniers jours`}
+                  />
+                )}
               </div>
 
               {/* 📉 Area Chart - Évolution streak (pleine largeur) */}
-              <StreakAreaChart
-                data={streakHistory}
-                title="Évolution de votre streak"
-                subtitle={`${period} derniers jours`}
-              />
+              {chartsLoading ? (
+                <ChartSkeleton type="area" />
+              ) : (
+                <StreakAreaChart
+                  data={streakHistory}
+                  title="Évolution de votre streak"
+                  subtitle={`${period} derniers jours`}
+                />
+              )}
 
               {/* ✅ AJOUT: Carte statistiques examens */}
               {examStats && examStats.totalExams > 0 && (
