@@ -43,6 +43,7 @@ const CoachIA = lazy(() => import('@/pages/CoachIA'));
 const Settings = lazy(() => import('@/pages/Settings'));
 const MySharedLinks = lazy(() => import('@/pages/MySharedLinks'));
 const PaymentPage = lazy(() => import('@/pages/PaymentPage'));
+const Social = lazy(() => import('@/pages/Social'));
 import AIAssistantSidebar from '@/components/AIAssistantSidebar';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
@@ -98,6 +99,7 @@ function App() {
               <Route path="/study-plan" element={<StudyPlan />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/my-shared-links" element={<MySharedLinks />} />
+              <Route path="/social" element={<Social />} />
               <Route path="/payment" element={<PaymentPage />} />
               <Route path="/test-debug" element={<TestProgressionDebug />} />
             </Route>
