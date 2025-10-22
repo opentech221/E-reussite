@@ -20,7 +20,11 @@ import {
   History,
   Share2,
   CreditCard,
-  Calendar
+  Calendar,
+  Brain,
+  Zap,
+  Users,
+  GraduationCap
 } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { Button } from '@/components/ui/button';
@@ -60,18 +64,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       description: 'Matières et leçons'
     },
     { 
-      path: '/progress', 
-      icon: BarChart3, 
-      label: 'Progression',
-      description: 'Stats et défis'
-    },
-    { 
-      path: '/historique', 
-      icon: History, 
-      label: 'Historique',
-      description: 'Activités récentes'
-    },
-    { 
       path: '/quiz', 
       icon: Target, 
       label: 'Quiz',
@@ -84,10 +76,40 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       description: 'Simulations d\'examen'
     },
     { 
+      path: '/challenges', 
+      icon: Zap, 
+      label: 'Défis',
+      description: 'Défis quotidiens',
+      badge: 'NEW',
+      badgeColor: 'bg-gradient-to-r from-yellow-500 to-orange-500'
+    },
+    { 
+      path: '/analytics', 
+      icon: Brain, 
+      label: 'Analytics',
+      description: 'Stats & Prédictions IA',
+      badge: 'IA',
+      badgeColor: 'bg-gradient-to-r from-purple-500 to-indigo-500'
+    },
+    { 
+      path: '/progress', 
+      icon: BarChart3, 
+      label: 'Progression',
+      description: 'Suivi détaillé'
+    },
+    { 
       path: '/leaderboard', 
       icon: Trophy, 
       label: 'Classement',
       description: 'Top élèves'
+    },
+    { 
+      path: '/social', 
+      icon: Users, 
+      label: 'Social',
+      description: 'Partage & Communauté',
+      badge: 'NEW',
+      badgeColor: 'bg-gradient-to-r from-blue-500 to-cyan-500'
     },
     { 
       path: '/badges', 
@@ -96,12 +118,16 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       description: 'Vos badges'
     },
     { 
+      path: '/historique', 
+      icon: History, 
+      label: 'Historique',
+      description: 'Activités récentes'
+    },
+    { 
       path: '/my-shared-links', 
       icon: Share2, 
       label: 'Mes Liens',
-      description: 'Liens partagés',
-      badge: 'NEW',
-      badgeColor: 'bg-gradient-to-r from-blue-500 to-cyan-500'
+      description: 'Liens partagés'
     },
     { 
       path: '/payment', 
