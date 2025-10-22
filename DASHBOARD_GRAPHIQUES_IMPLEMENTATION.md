@@ -207,7 +207,7 @@ ORDER BY date ASC;
 
 ## 📝 NOTES DE DÉVELOPPEMENT
 
-### **22 octobre 2025 - Session 1 (23h20-00h45)**
+### **22 octobre 2025 - Session 1 (23h20-01h15)**
 - ✅ Branche `feature/dashboard-graphs` créée
 - ✅ Audit Dashboard.jsx (1440 lignes)
 - ✅ KPIs identifiés (quiz, temps, streak, score)
@@ -216,7 +216,16 @@ ORDER BY date ASC;
 - ✅ 4 KPI Cards intégrées dans Dashboard
 - ✅ Bug fix: Import LucideIcon corrigé
 - ✅ Commit b4baa188: "integrate 4 KPI cards"
-- ⏳ Prochaine étape : DonutChart (Jour 2 matin)
+- ✅ DonutChart.jsx créé (148 lignes)
+- ✅ StudyTimeBarChart.jsx créé (140 lignes)
+- ✅ StreakAreaChart.jsx créé (154 lignes)
+- ✅ PeriodFilter.jsx créé (47 lignes)
+- ✅ fetchChartData() fonction avec Supabase queries
+- ✅ Commit 68977767: "add 3 chart components + period filter"
+- ✅ Table streak_history créée (migration SQL)
+- ✅ Trigger auto-record streak quotidien
+- ✅ Données historiques peuplées (90 jours max)
+- ⏳ Prochaine étape : Polish + Testing (Day 4)
 
 ---
 
@@ -241,9 +250,9 @@ git push origin feature/dashboard-graphs
 
 ---
 
-**Temps investi** : 1h25 (audit + StatCard + intégration + bug fix)  
-**Temps restant** : 30h35 / 32h
+**Temps investi** : 2h55 (audit + StatCard + 4 charts + table SQL + intégration)  
+**Temps restant** : 29h05 / 32h
 
 ---
 
-**Dernière mise à jour** : 23 octobre 2025 - 00h45
+**Dernière mise à jour** : 23 octobre 2025 - 01h15

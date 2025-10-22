@@ -829,18 +829,19 @@ const Dashboard = () => {
 
       setDailyStudyTime(dailyChartData);
 
-      // 3. Streak history (Area Chart)
-      // Générer données simulées pour streak (à remplacer par vraie table streak_history)
-      const streakData = [];
-      for (let i = period; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const streak = Math.max(0, (userPoints?.current_streak || 0) - Math.floor(Math.random() * 3));
-        streakData.push({
-          date: date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }),
-          streak: streak
-        });
-      }
+      // 3. Streak history (Area Chart) - Données réelles depuis streak_history
+      const { data: streakHistoryData } = await supabase
+        .from('streak_history')
+        .select('date, streak_value')
+        .eq('user_id', user.id)
+        .gte('date', daysAgo.toISOString().split('T')[0])
+        .order('date', { ascending: true });
+
+      const streakData = (streakHistoryData || []).map(s => ({
+        date: new Date(s.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }),
+        streak: s.streak_value
+      }));
+
       setStreakHistory(streakData);
 
     } catch (error) {
