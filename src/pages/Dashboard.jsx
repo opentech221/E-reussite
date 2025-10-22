@@ -29,6 +29,7 @@ import StreakAreaChart from '@/components/charts/StreakAreaChart';
 import PeriodFilter from '@/components/charts/PeriodFilter';
 import ChartSkeleton from '@/components/charts/ChartSkeleton';
 import ExportDashboardPDF from '@/components/ExportDashboardPDF';
+import FilterPanel from '@/components/FilterPanel';
 import { 
   trackDashboardVisit, 
   trackPeriodChange, 
@@ -483,6 +484,10 @@ const Dashboard = () => {
   const [streakHistory, setStreakHistory] = useState([]);
   const [chartsLoading, setChartsLoading] = useState(false);
 
+  // États pour les filtres avancés
+  const [dashboardFilters, setDashboardFilters] = useState({ matieres: [], difficulte: [], type: [] });
+  const [availableMatieres, setAvailableMatieres] = useState([]);
+
   // Handler pour le changement de période avec analytics
   const handlePeriodChange = (newPeriod) => {
     setPeriod(newPeriod);
@@ -528,6 +533,13 @@ const Dashboard = () => {
       // Import database helpers
       const { default: dbHelpers } = await import('@/lib/supabaseDB');
       const { dbHelpers: dbHelpersNew } = await import('@/lib/supabaseHelpers');
+
+      // Fetch available matières for filters
+      const { data: matieresData } = await supabase
+        .from('matieres')
+        .select('id, name, color')
+        .order('name');
+      setAvailableMatieres(matieresData || []);
 
       // Fetch gamification data
       const [pointsData, badgesData, leaderboardData] = await Promise.all([
@@ -811,13 +823,16 @@ const Dashboard = () => {
       daysAgo.setDate(daysAgo.getDate() - period);
 
       // 1. Répartition par matière (Donut Chart)
-      const { data: progressData } = await supabase
+      let progressQuery = supabase
         .from('user_progress')
         .select(`
           time_spent,
           lecons:lecon_id (
+            id,
+            difficulte,
             chapitres:chapitre_id (
               matieres:matiere_id (
+                id,
                 name,
                 color
               )
@@ -827,9 +842,38 @@ const Dashboard = () => {
         .eq('user_id', user.id)
         .gte('updated_at', daysAgo.toISOString());
 
+      // Appliquer les filtres de matières
+      if (dashboardFilters.matieres.length > 0) {
+        // Récupérer toutes les données puis filtrer côté client
+        // (car Supabase ne supporte pas .in() sur les relations imbriquées)
+      }
+
+      const { data: progressData } = await progressQuery;
+
+      // Filtrer les données selon les filtres actifs
+      const filteredProgressData = progressData?.filter(p => {
+        // Filtre par matière
+        if (dashboardFilters.matieres.length > 0) {
+          const matiereId = p.lecons?.chapitres?.matieres?.id;
+          if (!matiereId || !dashboardFilters.matieres.includes(matiereId)) {
+            return false;
+          }
+        }
+
+        // Filtre par difficulté
+        if (dashboardFilters.difficulte.length > 0) {
+          const difficulte = p.lecons?.difficulte;
+          if (!difficulte || !dashboardFilters.difficulte.includes(difficulte)) {
+            return false;
+          }
+        }
+
+        return true;
+      }) || [];
+
       // Aggréger par matière
       const matiereMap = {};
-      progressData?.forEach(p => {
+      filteredProgressData.forEach(p => {
         const matiereName = p.lecons?.chapitres?.matieres?.name || 'Autre';
         const matiereColor = p.lecons?.chapitres?.matieres?.color || '#6B7280';
         if (!matiereMap[matiereName]) {
@@ -845,7 +889,7 @@ const Dashboard = () => {
       const dailyMap = {};
       const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
       
-      progressData?.forEach(p => {
+      filteredProgressData.forEach(p => {
         const date = new Date(p.updated_at);
         const dayKey = date.toLocaleDateString('fr-FR');
         if (!dailyMap[dayKey]) {
@@ -897,7 +941,7 @@ const Dashboard = () => {
       if (dailyStudyTime?.length > 0) trackChartView('bar', userId);
       if (streakHistory?.length > 0) trackChartView('area', userId);
     }
-  }, [period, user, userPoints]);
+  }, [period, user, userPoints, dashboardFilters]);
 
   const handleAction = (description) => {
     toast({
@@ -1119,6 +1163,13 @@ const Dashboard = () => {
                   Statistiques détaillées
                 </h2>
                 <div className="flex items-center gap-3">
+                  <FilterPanel
+                    matieresOptions={availableMatieres}
+                    onFilterChange={setDashboardFilters}
+                    initialFilters={dashboardFilters}
+                    persistToLocalStorage={true}
+                    storageKey="dashboard_filters"
+                  />
                   <ExportDashboardPDF 
                     dashboardRef={dashboardRef}
                     userName={userProfile?.full_name || user?.email?.split('@')[0] || 'Utilisateur'}
