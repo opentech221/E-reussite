@@ -817,19 +817,30 @@ const Dashboard = () => {
           time_spent,
           chapitres:chapitre_id (
             matieres:matiere_id (
-              name,
-              color
+              name
             )
           )
         `)
         .eq('user_id', user.id)
         .gte('updated_at', daysAgo.toISOString());
 
+      // Couleurs par défaut pour les matières
+      const defaultColors = {
+        'Mathématiques': '#3B82F6',
+        'Français': '#EF4444',
+        'Physique': '#10B981',
+        'SVT': '#22C55E',
+        'Histoire': '#F59E0B',
+        'Géographie': '#8B5CF6',
+        'Anglais': '#EC4899',
+        'Philosophie': '#06B6D4'
+      };
+
       // Aggréger par matière
       const matiereMap = {};
       progressData?.forEach(p => {
         const matiereName = p.chapitres?.matieres?.name || 'Autre';
-        const matiereColor = p.chapitres?.matieres?.color || '#6B7280';
+        const matiereColor = defaultColors[matiereName] || '#6B7280';
         if (!matiereMap[matiereName]) {
           matiereMap[matiereName] = { name: matiereName, value: 0, color: matiereColor };
         }
