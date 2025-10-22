@@ -30,7 +30,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/use-toast';
-import { trackPageView, trackFeatureUsage } from '@/lib/analytics';
+import { trackEvent } from '@/lib/analytics';
 
 const Social = () => {
   const { user } = useAuth();
@@ -48,7 +48,7 @@ const Social = () => {
   useEffect(() => {
     if (user) {
       fetchSocialData();
-      trackPageView('social', user.id);
+      trackEvent('page_view', { page: 'social', user_id: user.id });
     }
   }, [user]);
 
@@ -135,7 +135,7 @@ const Social = () => {
     const text = `🎉 J'ai obtenu le badge "${achievement.badges.name}" sur E-Réussite ! ${achievement.badges.description}`;
     const url = `${window.location.origin}/profile/${user.id}`;
     
-    trackFeatureUsage('share_achievement', user.id, { badge_id: achievement.badge_id });
+    trackEvent('share_achievement', { user_id: user.id, badge_id: achievement.badge_id });
 
     // Partage natif si disponible
     if (navigator.share) {
@@ -162,7 +162,7 @@ const Social = () => {
     const text = `📊 Mes stats sur E-Réussite:\n✅ ${userStats.quizzes_completed} quiz complétés\n🏆 ${userStats.total_points} points\n⭐ ${userStats.badges_count || 0} badges\nRejoignez-moi !`;
     const url = window.location.origin;
 
-    trackFeatureUsage('share_stats', user.id);
+    trackEvent('share_stats', { user_id: user.id });
 
     if (navigator.share) {
       navigator.share({
@@ -193,11 +193,11 @@ const Social = () => {
       description: 'Partagez ce lien pour inviter vos amis',
     });
 
-    trackFeatureUsage('generate_referral_link', user.id);
+    trackEvent('generate_referral_link', { user_id: user.id });
   };
 
   const likePost = (postId) => {
-    trackFeatureUsage('like_post', user.id, { post_id: postId });
+    trackEvent('like_post', { user_id: user.id, post_id: postId });
     
     // Mettre à jour localement
     setStudyFeed(feed => feed.map(post => 
