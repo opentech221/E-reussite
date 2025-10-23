@@ -46,10 +46,22 @@ BEGIN
     SET badge_id = LOWER(
         REGEXP_REPLACE(
             REGEXP_REPLACE(
-                REGEXP_REPLACE(name, '[éèêë]', 'e', 'g'),
-                '[àâä]', 'a', 'g'
+                REGEXP_REPLACE(
+                    REGEXP_REPLACE(
+                        REGEXP_REPLACE(
+                            REGEXP_REPLACE(
+                                REGEXP_REPLACE(name, '[ÉÈÊË]', 'E', 'g'),
+                                '[éèêë]', 'e', 'g'
+                            ),
+                            '[ÀÂÄÁ]', 'A', 'g'
+                        ),
+                        '[àâäá]', 'a', 'g'
+                    ),
+                    '[ÎÍÏ]', 'I', 'g'
+                ),
+                '[îíï]', 'i', 'g'
             ),
-            '[^a-z0-9]+', '_', 'g'
+            '[^a-zA-Z0-9]+', '_', 'g'
         )
     )
     WHERE badge_id IS NULL;
