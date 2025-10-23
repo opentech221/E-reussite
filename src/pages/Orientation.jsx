@@ -19,7 +19,7 @@ import {
   Award,
   RefreshCw,
 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/SupabaseAuthContext';
 import {
   ORIENTATION_QUESTIONS,
   calculateOrientationScores,
