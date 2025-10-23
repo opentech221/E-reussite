@@ -477,9 +477,11 @@ const AdvancedAnalytics = () => {
     
     // Facteur 2: Régularité (30%)
     const daysWithActivity = new Set(
-      [...(quizData || []), ...(lessonData || [])].map(item => 
-        item.completed_at.split('T')[0]
-      )
+      [...(quizData || []), ...(lessonData || [])].map(item => {
+        // Quiz use completed_at, lessons use created_at (Phase 3 change)
+        const timestamp = item.completed_at || item.created_at;
+        return timestamp ? timestamp.split('T')[0] : null;
+      }).filter(Boolean)
     ).size;
     readinessScore += (daysWithActivity / 30) * 30;
     
