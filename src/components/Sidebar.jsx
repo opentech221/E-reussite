@@ -24,7 +24,8 @@ import {
   Brain,
   Zap,
   Users,
-  GraduationCap
+  GraduationCap,
+  Compass
 } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { Button } from '@/components/ui/button';
@@ -90,6 +91,14 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       description: 'Défis quotidiens',
       badge: 'NEW',
       badgeColor: 'bg-gradient-to-r from-yellow-500 to-orange-500'
+    },
+    { 
+      path: '/orientation', 
+      icon: Compass, 
+      label: 'Orientation',
+      description: 'Trouve ton métier idéal',
+      badge: 'NOUVEAU',
+      badgeColor: 'bg-gradient-to-r from-pink-500 to-rose-500'
     },
     { 
       path: '/analytics', 
