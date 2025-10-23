@@ -1511,9 +1511,17 @@ const Dashboard = () => {
                   {dashboardData.recentActivity && dashboardData.recentActivity.length > 0 ? (
                     <div className="space-y-4">
                       {dashboardData.recentActivity.slice(0, 10).map((activity, index) => {
-                        const activityDate = new Date(activity.timestamp || activity.created_at);
-                        const timeAgo = formatDistanceToNow(activityDate, { addSuffix: true, locale: fr });
-                        const formattedDate = format(activityDate, 'dd MMM yyyy HH:mm', { locale: fr });
+                        // ✅ Validation de la date pour éviter "Invalid time value"
+                        const timestamp = activity.timestamp || activity.created_at;
+                        const activityDate = timestamp ? new Date(timestamp) : null;
+                        const isValidDate = activityDate && !isNaN(activityDate.getTime());
+                        
+                        const timeAgo = isValidDate 
+                          ? formatDistanceToNow(activityDate, { addSuffix: true, locale: fr })
+                          : 'Date inconnue';
+                        const formattedDate = isValidDate
+                          ? format(activityDate, 'dd MMM yyyy HH:mm', { locale: fr })
+                          : 'N/A';
                         
                         return (
                           <div key={index} className="flex items-start gap-4 pb-4 border-b dark:border-slate-700 last:border-0">
@@ -1613,8 +1621,13 @@ const Dashboard = () => {
                   {dashboardData.completedChapters && dashboardData.completedChapters.length > 0 ? (
                     <div className="space-y-3">
                       {dashboardData.completedChapters.slice(0, 8).map((chapter, index) => {
-                        const completionDate = new Date(chapter.completed_at || chapter.created_at);
-                        const timeAgo = formatDistanceToNow(completionDate, { addSuffix: true, locale: fr });
+                        // ✅ Validation de la date pour éviter "Invalid time value"
+                        const timestamp = chapter.completed_at || chapter.created_at;
+                        const completionDate = timestamp ? new Date(timestamp) : null;
+                        const isValidDate = completionDate && !isNaN(completionDate.getTime());
+                        const timeAgo = isValidDate
+                          ? formatDistanceToNow(completionDate, { addSuffix: true, locale: fr })
+                          : 'Date inconnue';
                         
                         return (
                           <div 
