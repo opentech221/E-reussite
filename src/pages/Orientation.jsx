@@ -1,6 +1,6 @@
 /**
  * 🎯 PAGE ORIENTATION - Test d'Orientation Professionnelle
- * MVP Phase 1 - 15 questions + recommandations
+ * MVP Phase 1 - 20 questions + recommandations (avec contexte socio-économique)
  * Date: 23 octobre 2025
  */
 
@@ -156,7 +156,7 @@ const Orientation = () => {
               Trouve ton Métier Idéal
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Un test intelligent de 15 questions pour découvrir les carrières qui correspondent vraiment à ta personnalité, tes talents et tes ambitions.
+              Un test intelligent de 20 questions pour découvrir les carrières qui correspondent à ta personnalité, tes talents, ton contexte socio-économique et tes ambitions.
             </p>
           </motion.div>
 
@@ -171,8 +171,8 @@ const Orientation = () => {
               <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center mb-4">
                 <Target className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">15 Questions</h3>
-              <p className="text-gray-600 dark:text-gray-400">Test rapide et précis en moins de 5 minutes</p>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">20 Questions</h3>
+              <p className="text-gray-600 dark:text-gray-400">Test complet incluant ton contexte de vie</p>
             </motion.div>
 
             <motion.div
@@ -246,7 +246,7 @@ const Orientation = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Réponds aux questions</h3>
-                  <p className="text-gray-600 dark:text-gray-400">Tes matières préférées, tes centres d'intérêt, ton style de travail...</p>
+                  <p className="text-gray-600 dark:text-gray-400">Tes matières, tes centres d'intérêt, ton contexte familial et financier...</p>
                 </div>
               </div>
 
@@ -256,7 +256,7 @@ const Orientation = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Analyse intelligente</h3>
-                  <p className="text-gray-600 dark:text-gray-400">Nos algorithmes calculent ton profil selon 6 dimensions</p>
+                  <p className="text-gray-600 dark:text-gray-400">Algorithme tenant compte de tes intérêts ET de ton contexte réel</p>
                 </div>
               </div>
 
