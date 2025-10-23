@@ -174,9 +174,79 @@ export const ORIENTATION_QUESTIONS = [
     scoreMultiplier: 7,
   },
 
-  // SECTION 5 : ASPIRATIONS (3 questions)
+  // SECTION 5 : CONTEXTE SOCIO-ÉCONOMIQUE (5 questions)
   {
     id: 'Q13',
+    section: 'context',
+    type: 'single_choice',
+    question: 'Quelle est la situation financière de ta famille pour tes études ?',
+    subtitle: 'Sois honnête, cela nous aidera à proposer des métiers réalistes',
+    icon: '💰',
+    options: [
+      { value: 'limited', label: 'Ressources limitées (besoin de travailler vite)', icon: '⚡', context: { financial_constraint: 'high', study_duration_max: 2 } },
+      { value: 'moderate', label: 'Ressources modérées (formation courte ou bourse)', icon: '📚', context: { financial_constraint: 'medium', study_duration_max: 4 } },
+      { value: 'comfortable', label: 'Ressources confortables (études longues possibles)', icon: '🎓', context: { financial_constraint: 'low', study_duration_max: 10 } },
+      { value: 'independent', label: 'Je prévois me débrouiller seul(e)', icon: '💼', context: { financial_constraint: 'high', entrepreneurial: true } },
+    ],
+  },
+
+  {
+    id: 'Q14',
+    section: 'context',
+    type: 'single_choice',
+    question: 'Quel est le niveau d\'éducation de tes parents ?',
+    subtitle: 'Cela influence le réseau professionnel et les opportunités',
+    icon: '👨‍👩‍👧',
+    options: [
+      { value: 'primary', label: 'École primaire ou moins', icon: '📖', context: { family_network: 'low' } },
+      { value: 'secondary', label: 'Collège/Lycée', icon: '🎒', context: { family_network: 'medium' } },
+      { value: 'higher', label: 'Université/Formation supérieure', icon: '🎓', context: { family_network: 'high' } },
+      { value: 'mixed', label: 'Mixte ou je ne sais pas', icon: '🤷', context: { family_network: 'medium' } },
+    ],
+  },
+
+  {
+    id: 'Q15',
+    section: 'context',
+    type: 'single_choice',
+    question: 'Où habites-tu actuellement ?',
+    subtitle: 'Cela influence l\'accès aux formations et opportunités',
+    icon: '🏘️',
+    options: [
+      { value: 'dakar', label: 'Dakar ou grande ville', icon: '🏙️', context: { location: 'urban', opportunities: 'high' } },
+      { value: 'regional', label: 'Ville régionale (Thiès, Saint-Louis...)', icon: '🏘️', context: { location: 'semi-urban', opportunities: 'medium' } },
+      { value: 'rural', label: 'Zone rurale ou village', icon: '🌾', context: { location: 'rural', opportunities: 'low' } },
+    ],
+  },
+
+  {
+    id: 'Q16',
+    section: 'context',
+    type: 'rating',
+    question: 'À quel point est-il important que ton métier soit compatible avec ta pratique religieuse ?',
+    subtitle: 'Horaires de prière, jeûne du ramadan, environnement de travail...',
+    icon: '🕌',
+    domain: 'religious_compatibility',
+    scoreMultiplier: 10,
+  },
+
+  {
+    id: 'Q17',
+    section: 'context',
+    type: 'single_choice',
+    question: 'As-tu accès à des relations professionnelles dans ta famille/entourage ?',
+    subtitle: 'Oncles, cousins, voisins qui peuvent t\'aider à trouver un stage/emploi',
+    icon: '🤝',
+    options: [
+      { value: 'none', label: 'Non, je dois me débrouiller seul(e)', icon: '💪', context: { network_access: 'none' } },
+      { value: 'some', label: 'Quelques contacts dans certains domaines', icon: '👥', context: { network_access: 'limited' } },
+      { value: 'strong', label: 'Oui, réseau familial/professionnel fort', icon: '🌐', context: { network_access: 'strong' } },
+    ],
+  },
+
+  // SECTION 6 : ASPIRATIONS (3 questions)
+  {
+    id: 'Q18',
     section: 'aspirations',
     type: 'single_choice',
     question: 'Combien d\'années d\'études es-tu prêt(e) à faire ?',
@@ -190,7 +260,21 @@ export const ORIENTATION_QUESTIONS = [
   },
 
   {
-    id: 'Q14',
+    id: 'Q18',
+    section: 'aspirations',
+    type: 'single_choice',
+    question: 'Combien d\'années d\'études es-tu prêt(e) à faire ?',
+    subtitle: 'Après le BFEM ou le BAC',
+    options: [
+      { value: 'short', label: '1-2 ans (Formation rapide)', icon: '⚡', domains: { technical: 15 } },
+      { value: 'medium', label: '3-5 ans (Licence/Master)', icon: '📚', domains: { commercial: 10, scientific: 10 } },
+      { value: 'long', label: '6+ ans (Doctorat, Médecine)', icon: '🎓', domains: { scientific: 20 } },
+      { value: 'flexible', label: 'Flexible selon le métier', icon: '🔄', domains: {} },
+    ],
+  },
+
+  {
+    id: 'Q19',
     section: 'aspirations',
     type: 'multiple_choice',
     question: 'Quels sont tes objectifs professionnels ?',
@@ -207,7 +291,7 @@ export const ORIENTATION_QUESTIONS = [
   },
 
   {
-    id: 'Q15',
+    id: 'Q20',
     section: 'aspirations',
     type: 'text',
     question: 'Si tu devais décrire ton métier idéal en une phrase...',
@@ -237,6 +321,12 @@ export const calculateOrientationScores = (answers) => {
     disliked_subjects: [],
     preferred_work_environment: null,
     career_goals: '',
+    // Nouveau : contexte socio-économique
+    financial_constraint: null, // low | medium | high
+    family_network: null, // low | medium | high
+    location: null, // urban | semi-urban | rural
+    network_access: null, // none | limited | strong
+    religious_importance: 0, // 0-100
   };
 
   // Parcourir les réponses
@@ -274,9 +364,14 @@ export const calculateOrientationScores = (answers) => {
       const domain = question.domain;
       const multiplier = question.scoreMultiplier || 5;
       scores[domain] += answer * multiplier;
+      // Si la question concerne la compatibilité religieuse, stocker une valeur 0-100
+      if (domain === 'religious_compatibility') {
+        // Normaliser sur 0-100
+        preferences.religious_importance = Math.round((answer / 5) * 100);
+      }
     }
 
-    // Q7-Q9, Q13 : Single choice
+    // Q7-Q9, Q13-Q15, Q17-Q18 : Single choice avec contexte
     if (question.type === 'single_choice') {
       const option = question.options.find(opt => opt.value === answer);
       if (option && option.domains) {
@@ -284,6 +379,23 @@ export const calculateOrientationScores = (answers) => {
           scores[domain] += points;
         });
       }
+      
+      // Capturer le contexte socio-économique
+      if (option && option.context) {
+        if (questionId === 'Q13') {
+          preferences.financial_constraint = option.context.financial_constraint;
+        }
+        if (questionId === 'Q14') {
+          preferences.family_network = option.context.family_network;
+        }
+        if (questionId === 'Q15') {
+          preferences.location = option.context.location;
+        }
+        if (questionId === 'Q17') {
+          preferences.network_access = option.context.network_access;
+        }
+      }
+      
       if (questionId === 'Q7' && option) {
         preferences.preferred_work_environment = option.environment;
       }
@@ -318,6 +430,9 @@ export const calculateOrientationScores = (answers) => {
   console.log('✅ [Orientation] Scores calculés:', scores);
   console.log('📋 [Orientation] Préférences:', preferences);
 
+  // Normaliser la dimension religieuse si présente (scoreMultiplier déjà appliqué)
+  preferences.religious_importance = Math.min(100, Math.max(0, preferences.religious_importance || 0));
+
   return { scores, preferences };
 };
 
@@ -350,6 +465,34 @@ export const matchCareers = async (scores, preferences, userLevel) => {
       compatibilityScore += (scores.artistic * career.interest_artistic) / 100 * 0.10;
       compatibilityScore += (scores.social * career.interest_social) / 100 * 0.10;
       compatibilityScore += (scores.commercial * career.interest_commercial) / 100 * 0.10;
+
+      // --- Nouveaux critères socio-économiques ---
+      // 1) Financial compatibility (penalize if user's constraint high and career needs high investment)
+      // career.financial_requirement can be 'low'|'medium'|'high'
+      const finReq = career.financial_requirement || 'medium';
+      const userFin = preferences.financial_constraint || 'medium';
+      const finPenalty = (finReq === 'high' && userFin === 'high') ? -15 : 0;
+      const finMinorPenalty = (finReq === 'medium' && userFin === 'high') ? -7 : 0;
+      compatibilityScore += finPenalty + finMinorPenalty;
+
+      // 2) Family/network bonus — si user a un réseau fort et carrière demande réseau
+      const careerNeedsNetwork = career.requires_network || false;
+      if (careerNeedsNetwork && preferences.network_access === 'strong') compatibilityScore += 10;
+      if (careerNeedsNetwork && preferences.network_access === 'limited') compatibilityScore += 3;
+
+      // 3) Location/opportunities
+      // If user in rural and career opportunities are urban, small penalty
+      const careerLocation = career.preferred_location || 'urban';
+      if (preferences.location === 'rural' && careerLocation === 'urban') compatibilityScore -= 5;
+
+      // 4) Religious compatibility
+      // career.religious_friendly: 'friendly'|'neutral'|'challenging'
+      const relPref = preferences.religious_importance || 0;
+      const careerRel = career.religious_friendly || 'neutral';
+      if (relPref >= 60) {
+        if (careerRel === 'friendly') compatibilityScore += 10;
+        if (careerRel === 'challenging') compatibilityScore -= 10;
+      }
 
       // Bonus environnement de travail (20% du total)
       if (preferences.preferred_work_environment === career.work_environment) {
