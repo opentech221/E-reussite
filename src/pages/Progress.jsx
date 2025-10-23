@@ -226,6 +226,103 @@ export default function Progress() {
         />
       </div>
 
+      {/* ✅ Timeline de Progression Détaillée - Phase 4 Bug #6 */}
+      <div className="mt-8">
+        <Card className="border-2 border-primary/20 dark:bg-slate-800 dark:border-white/30 shadow-xl dark:shadow-[0_0_35px_rgba(255,255,255,0.5)]">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 dark:text-white">
+              <Clock className="w-5 h-5 text-primary" />
+              📅 Timeline Complète de Progression
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {pointsHistory && pointsHistory.length > 0 ? (
+              <div className="space-y-4">
+                {pointsHistory.map((event, index) => {
+                  const eventDate = new Date(event.created_at);
+                  const actionIcons = {
+                    'quiz_completed': '🎯',
+                    'lesson_completed': '📖',
+                    'chapter_completed': '✅',
+                    'badge_earned': '🏆',
+                    'challenge_completed': '💪',
+                    'exam_completed': '📝',
+                    'streak_bonus': '🔥'
+                  };
+                  
+                  const actionColors = {
+                    'quiz_completed': 'from-blue-500 to-cyan-500',
+                    'lesson_completed': 'from-green-500 to-emerald-500',
+                    'chapter_completed': 'from-purple-500 to-pink-500',
+                    'badge_earned': 'from-yellow-500 to-orange-500',
+                    'challenge_completed': 'from-red-500 to-rose-500',
+                    'exam_completed': 'from-indigo-500 to-violet-500',
+                    'streak_bonus': 'from-orange-500 to-red-500'
+                  };
+
+                  return (
+                    <div key={index} className="flex items-start gap-4 relative">
+                      {/* Ligne verticale */}
+                      {index < pointsHistory.length - 1 && (
+                        <div className="absolute left-5 top-12 w-0.5 h-full bg-slate-200 dark:bg-slate-700" />
+                      )}
+                      
+                      {/* Icône de l'événement */}
+                      <div className={`flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br ${actionColors[event.action_type] || 'from-slate-400 to-slate-500'} flex items-center justify-center text-white text-lg z-10`}>
+                        {actionIcons[event.action_type] || '📌'}
+                      </div>
+                      
+                      {/* Contenu */}
+                      <div className="flex-1 pb-8">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-semibold text-slate-800 dark:text-slate-100">
+                                {event.action_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                              </h4>
+                              <span className="text-sm font-bold text-green-600 dark:text-green-400">
+                                +{event.points_earned} pts
+                              </span>
+                            </div>
+                            
+                            {event.action_details && (
+                              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                                {typeof event.action_details === 'string' 
+                                  ? event.action_details 
+                                  : event.action_details.title || event.action_details.name || 'Détails non disponibles'}
+                              </p>
+                            )}
+                            
+                            <div className="flex items-center gap-2 mt-2 text-xs text-slate-500 dark:text-slate-400">
+                              <Clock className="w-3 h-3" />
+                              <span>
+                                {eventDate.toLocaleDateString('fr-FR', {
+                                  day: 'numeric',
+                                  month: 'long',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-slate-500">
+                <TrendingUp className="w-16 h-16 mx-auto mb-3 opacity-30" />
+                <p className="text-lg">Aucune activité enregistrée</p>
+                <p className="text-sm mt-2">Complétez des quiz et leçons pour voir votre timeline !</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       {/* ✅ AJOUT: Section Examens */}
       {examStats && examStats.totalExams > 0 && (
         <div className="mt-8">

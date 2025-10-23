@@ -5,10 +5,10 @@ import { motion } from 'framer-motion';
 import { 
   BookOpen, Award, TrendingUp, Target, Sigma, Atom, Feather, Footprints, 
   Timer, AlertTriangle, Trophy, Sparkles, MessageSquare, Clock, Calendar,
-  BarChart3, Activity, Star, Flame, Brain, Zap, BookMarked, Users, User, ChevronRight, LayoutDashboard
+  BarChart3, Activity, Star, Flame, Brain, Zap, BookMarked, Users, User, ChevronRight, LayoutDashboard, Check
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -38,6 +38,8 @@ import {
   trackSessionStart,
   trackSessionEnd
 } from '@/lib/analytics';
+import { formatDistanceToNow, format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 // ============================================
 // HELPER FUNCTIONS
@@ -1223,17 +1225,33 @@ const Dashboard = () => {
                       {dashboardData.subjectProgress && dashboardData.subjectProgress.length > 0 ? (
                         dashboardData.subjectProgress.map((subject, index) => {
                           const IconComponent = badgeIcons[subject.icon] || BookOpen;
+                          // ✅ Utiliser les couleurs de la DB avec styles inline
+                          const bgColor = subject.color || '#6B7280';
+                          const bgStyle = { 
+                            backgroundColor: `${bgColor}15` // 15 = opacity 0.08 en hex
+                          };
+                          const iconStyle = { color: bgColor };
+                          
                           return (
                             <div key={index} className="flex items-center gap-4">
-                              <div className={`w-10 h-10 rounded-lg bg-${subject.color}-500/10 flex items-center justify-center`}>
-                                <IconComponent className={`w-5 h-5 text-${subject.color}-600`} />
+                              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={bgStyle}>
+                                <IconComponent className="w-5 h-5" style={iconStyle} />
                               </div>
                               <div className="flex-1">
                                 <div className="flex justify-between items-center mb-2">
                                   <span className="font-medium">{subject.name}</span>
                                   <span className="text-sm text-slate-600 dark:text-slate-300">{subject.progress}%</span>
                                 </div>
-                                <Progress value={subject.progress} className="h-2" />
+                                {/* ✅ Progress bar avec couleur dynamique */}
+                                <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                  <div 
+                                    className="h-full rounded-full transition-all duration-300"
+                                    style={{ 
+                                      width: `${subject.progress}%`,
+                                      backgroundColor: bgColor 
+                                    }}
+                                  />
+                                </div>
                                 <p className="text-xs text-slate-500 mt-1">
                                   {subject.score > 0 ? `Dernière note: ${subject.score}%` : 'Aucun quiz réalisé'}
                                 </p>
@@ -1482,6 +1500,155 @@ const Dashboard = () => {
                   </Card>
                 )}
               </div>
+
+              {/* ✅ Timeline de Progression - Phase 4 Bug #5 */}
+              <Card className="dark:bg-slate-800 dark:border-white/20 border-2 shadow-lg dark:shadow-[0_0_30px_rgba(255,255,255,0.4)]">
+                <CardHeader>
+                  <CardTitle className="dark:text-slate-100">📅 Timeline de Progression</CardTitle>
+                  <CardDescription>Historique de vos activités récentes</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {dashboardData.recentActivity && dashboardData.recentActivity.length > 0 ? (
+                    <div className="space-y-4">
+                      {dashboardData.recentActivity.slice(0, 10).map((activity, index) => {
+                        const activityDate = new Date(activity.timestamp || activity.created_at);
+                        const timeAgo = formatDistanceToNow(activityDate, { addSuffix: true, locale: fr });
+                        const formattedDate = format(activityDate, 'dd MMM yyyy HH:mm', { locale: fr });
+                        
+                        return (
+                          <div key={index} className="flex items-start gap-4 pb-4 border-b dark:border-slate-700 last:border-0">
+                            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                              {activity.type === 'quiz' && <Brain className="w-5 h-5 text-white" />}
+                              {activity.type === 'lesson' && <BookOpen className="w-5 h-5 text-white" />}
+                              {activity.type === 'badge' && <Award className="w-5 h-5 text-white" />}
+                              {!['quiz', 'lesson', 'badge'].includes(activity.type) && <TrendingUp className="w-5 h-5 text-white" />}
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-medium dark:text-slate-100">{activity.title}</p>
+                              <p className="text-sm text-slate-600 dark:text-slate-400">{activity.description}</p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Clock className="w-3 h-3 text-slate-400" />
+                                <span className="text-xs text-slate-500 dark:text-slate-400" title={formattedDate}>
+                                  {timeAgo}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-slate-500">
+                      <Clock className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>Aucune activité récente</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* ✅ Statistiques par Matière - Phase 4 Bug #5 */}
+              <Card className="dark:bg-slate-800 dark:border-white/20 border-2 shadow-lg dark:shadow-[0_0_30px_rgba(255,255,255,0.4)]">
+                <CardHeader>
+                  <CardTitle className="dark:text-slate-100">📊 Statistiques par Matière</CardTitle>
+                  <CardDescription>Détails de votre progression par matière</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {dashboardData.subjectProgress.map((subject, index) => {
+                      const IconComponent = badgeIcons[subject.icon] || BookOpen;
+                      const bgColor = subject.color || '#6B7280';
+                      const iconStyle = { color: bgColor };
+                      
+                      return (
+                        <div key={index} className="p-4 rounded-lg bg-slate-50 dark:bg-slate-700/50">
+                          <div className="flex items-center gap-3 mb-3">
+                            <IconComponent style={iconStyle} className="w-5 h-5" />
+                            <h4 className="font-semibold dark:text-slate-100">{subject.name}</h4>
+                          </div>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                              <p className="text-slate-500 dark:text-slate-400">Progression</p>
+                              <p className="font-semibold text-lg" style={{ color: bgColor }}>{subject.progress}%</p>
+                            </div>
+                            <div>
+                              <p className="text-slate-500 dark:text-slate-400">Chapitres</p>
+                              <p className="font-semibold text-lg dark:text-slate-100">
+                                {subject.completedChapters}/{subject.totalChapters}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-slate-500 dark:text-slate-400">Quiz réussis</p>
+                              <p className="font-semibold text-lg dark:text-slate-100">{subject.quizzesPassed || 0}</p>
+                            </div>
+                            <div>
+                              <p className="text-slate-500 dark:text-slate-400">Score moyen</p>
+                              <p className="font-semibold text-lg dark:text-slate-100">{subject.averageScore || 0}%</p>
+                            </div>
+                          </div>
+                          <div className="mt-3">
+                            <div className="h-2 bg-slate-200 dark:bg-slate-600 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full transition-all duration-500"
+                                style={{ 
+                                  width: `${subject.progress}%`,
+                                  backgroundColor: bgColor
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* ✅ Chapitres Complétés - Phase 4 Bug #5 */}
+              <Card className="dark:bg-slate-800 dark:border-white/20 border-2 shadow-lg dark:shadow-[0_0_30px_rgba(255,255,255,0.4)]">
+                <CardHeader>
+                  <CardTitle className="dark:text-slate-100">✅ Chapitres Complétés Récemment</CardTitle>
+                  <CardDescription>Vos derniers accomplissements</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {dashboardData.completedChapters && dashboardData.completedChapters.length > 0 ? (
+                    <div className="space-y-3">
+                      {dashboardData.completedChapters.slice(0, 8).map((chapter, index) => {
+                        const completionDate = new Date(chapter.completed_at || chapter.created_at);
+                        const timeAgo = formatDistanceToNow(completionDate, { addSuffix: true, locale: fr });
+                        
+                        return (
+                          <div 
+                            key={index} 
+                            className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+                                <Check className="w-5 h-5 text-white" />
+                              </div>
+                              <div>
+                                <p className="font-medium dark:text-slate-100">{chapter.name}</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">{chapter.subject}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                                <Clock className="w-3 h-3" />
+                                <span>{timeAgo}</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-slate-500">
+                      <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>Aucun chapitre complété</p>
+                      <p className="text-sm mt-1">Commencez à étudier pour voir vos progrès !</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* Analytics Tab */}
@@ -1535,27 +1702,158 @@ const Dashboard = () => {
 
             {/* Achievements Tab */}
             <TabsContent value="achievements" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {gamificationData?.recentBadges?.map((badge, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Card className="text-center p-6 dark:bg-slate-800 dark:border-white/30 border-2 shadow-lg dark:shadow-[0_0_35px_rgba(255,255,255,0.5)]">
-                      <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Trophy className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
-                      </div>
-                      <h3 className="font-bold mb-2">{badge.badge_name}</h3>
-                      <p className="text-sm text-slate-600 mb-4">{badge.badge_description}</p>
-                      <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">
-                        {badge.badge_rarity}
-                      </span>
-                    </Card>
-                  </motion.div>
-                ))}
+              {/* ✅ Statistiques de Succès - Phase 4 Bug #7 */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <Card className="text-center p-4 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 border-yellow-200 dark:border-yellow-700">
+                  <Trophy className="w-8 h-8 mx-auto mb-2 text-yellow-600" />
+                  <p className="text-2xl font-bold text-yellow-700 dark:text-yellow-400">
+                    {gamificationData?.recentBadges?.length || 0}
+                  </p>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">Badges obtenus</p>
+                </Card>
+                <Card className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
+                  <Award className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                  <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">
+                    {gamificationData?.level || 1}
+                  </p>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">Niveau actuel</p>
+                </Card>
+                <Card className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
+                  <Target className="w-8 h-8 mx-auto mb-2 text-green-600" />
+                  <p className="text-2xl font-bold text-green-700 dark:text-green-400">
+                    {gamificationData?.points || 0}
+                  </p>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">Points totaux</p>
+                </Card>
+                <Card className="text-center p-4 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700">
+                  <Flame className="w-8 h-8 mx-auto mb-2 text-orange-600" />
+                  <p className="text-2xl font-bold text-orange-700 dark:text-orange-400">
+                    {gamificationData?.streak || 0}
+                  </p>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">Jours de série</p>
+                </Card>
               </div>
+
+              {/* Badges récents */}
+              <Card className="dark:bg-slate-800 dark:border-white/20 border-2 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="dark:text-slate-100 flex items-center gap-2">
+                    <Trophy className="w-5 h-5 text-yellow-600" />
+                    🏆 Badges Récents
+                  </CardTitle>
+                  <CardDescription>Vos derniers accomplissements</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {gamificationData?.recentBadges && gamificationData.recentBadges.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {gamificationData.recentBadges.map((badge, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: index * 0.1 }}
+                        >
+                          <Card className="text-center p-6 dark:bg-slate-700/50 dark:border-white/10 border-2 shadow-lg hover:shadow-xl transition-shadow">
+                            <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                              <Trophy className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
+                            </div>
+                            <h3 className="font-bold mb-2 dark:text-slate-100">{badge.badge_name}</h3>
+                            <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">{badge.badge_description}</p>
+                            <span className="text-xs bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded-full">
+                              {badge.badge_rarity}
+                            </span>
+                            {badge.earned_at && (
+                              <div className="flex items-center justify-center gap-1 mt-3 text-xs text-slate-500">
+                                <Clock className="w-3 h-3" />
+                                <span>
+                                  {new Date(badge.earned_at).toLocaleDateString('fr-FR', {
+                                    day: 'numeric',
+                                    month: 'short'
+                                  })}
+                                </span>
+                              </div>
+                            )}
+                          </Card>
+                        </motion.div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-slate-500">
+                      <Trophy className="w-16 h-16 mx-auto mb-3 opacity-30" />
+                      <p className="text-lg">Aucun badge obtenu</p>
+                      <p className="text-sm mt-2">Complétez des défis pour gagner des badges !</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Prochains objectifs */}
+              <Card className="dark:bg-slate-800 dark:border-white/20 border-2 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="dark:text-slate-100 flex items-center gap-2">
+                    <Target className="w-5 h-5 text-blue-600" />
+                    🎯 Prochains Objectifs
+                  </CardTitle>
+                  <CardDescription>Badges à débloquer</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                          <BookOpen className="w-6 h-6 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="font-semibold dark:text-slate-100">Lecteur Assidu</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-300">Complétez 10 leçons</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-slate-500">Progress</p>
+                        <p className="font-bold text-blue-600">
+                          {dashboardData?.stats?.lessonsCompleted || 0}/10
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                          <Brain className="w-6 h-6 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="font-semibold dark:text-slate-100">Expert Quiz</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-300">Réussissez 25 quiz</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-slate-500">Progress</p>
+                        <p className="font-bold text-green-600">
+                          {dashboardData?.stats?.quizzesCompleted || 0}/25
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+                          <Flame className="w-6 h-6 text-purple-600" />
+                        </div>
+                        <div>
+                          <p className="font-semibold dark:text-slate-100">Série de 7 Jours</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-300">Étudiez 7 jours d'affilée</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-slate-500">Progress</p>
+                        <p className="font-bold text-purple-600">
+                          {gamificationData?.streak || 0}/7
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
 
