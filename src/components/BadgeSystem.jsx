@@ -377,10 +377,20 @@ const BadgeSystem = () => {
     }
     
     try {
-      // Query directe Supabase vers user_badges
+      // Query avec JOIN vers badges pour récupérer les infos complètes
       const { data: badgesData, error } = await supabase
         .from('user_badges')
-        .select('badge_name, earned_at')
+        .select(`
+          id,
+          earned_at,
+          badge_id,
+          badges!inner (
+            badge_id,
+            name,
+            icon_name,
+            description
+          )
+        `)
         .eq('user_id', user.id);
       
       if (error) {
@@ -390,18 +400,10 @@ const BadgeSystem = () => {
       
       console.log('📛 Badges from DB:', badgesData);
       
-      // Convertir les badge_name en badge_id en utilisant le mapping
-      const badgeIds = badgesData
-        ?.map(b => {
-          const mappedId = DB_BADGE_MAPPING[b.badge_name];
-          if (!mappedId) {
-            console.warn(`⚠️ Badge "${b.badge_name}" not found in mapping`);
-          }
-          return mappedId;
-        })
-        .filter(Boolean) || [];
+      // Extraire les badge_id directement (déjà au bon format)
+      const badgeIds = badgesData?.map(b => b.badge_id).filter(Boolean) || [];
       
-      console.log('✅ Mapped badge IDs:', badgeIds);
+      console.log('✅ Badge IDs:', badgeIds);
       setUserBadges(badgeIds);
       
     } catch (error) {
