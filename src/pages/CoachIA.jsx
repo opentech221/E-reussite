@@ -336,10 +336,20 @@ const CoachIA = () => {
         .select('*')
         .eq('user_id', user.id);
 
-      // Récupérer badges
+      // Récupérer badges avec JOIN
       const { data: badgesData } = await supabase
         .from('user_badges')
-        .select('badge_name, badge_icon, badge_type, badge_description, earned_at')
+        .select(`
+          id,
+          earned_at,
+          badge_id,
+          badges!inner (
+            badge_id,
+            name,
+            icon_name,
+            description
+          )
+        `)
         .eq('user_id', user.id)
         .order('earned_at', { ascending: false });
 
@@ -373,7 +383,7 @@ const CoachIA = () => {
         completedChapters: completedChapitres?.length || 0,
         totalBadges: badgesData?.length || 0,
         matieres,
-        recentBadges: badgesData?.slice(0, 3).map(b => b.badge_name) || []
+        recentBadges: badgesData?.slice(0, 3).map(b => b.badges.name) || []
       };
     } catch (error) {
       console.error('Erreur récupération données:', error);

@@ -69,10 +69,20 @@ export class AICoachService {
         .eq('user_id', this.userId)
         .order('completed_at', { ascending: false });
 
-      // Badges gagnés
+      // Badges gagnés - JOIN avec table badges
       const { data: badges } = await supabase
         .from('user_badges')
-        .select('badge_name, badge_icon, badge_type, badge_description, earned_at')
+        .select(`
+          id,
+          earned_at,
+          badge_id,
+          badges!inner (
+            badge_id,
+            name,
+            icon_name,
+            description
+          )
+        `)
         .eq('user_id', this.userId)
         .order('earned_at', { ascending: false });
 

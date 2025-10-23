@@ -169,12 +169,31 @@ const AIAssistantSidebar = () => {
       }
 
       console.log('🔍 [fetchUserRealData] Requête user_badges...');
-      // 2. Badges débloqués (colonnes: badge_name, badge_icon, badge_type, earned_at)
-      const { data: badgesData, error: badgesError } = await supabase
+      // 2. Badges débloqués - JOIN avec table badges via badge_id (FK)
+      const { data: rawBadgesData, error: badgesError } = await supabase
         .from('user_badges')
-        .select('badge_name, badge_icon, badge_type, badge_description, earned_at')
+        .select(`
+          id,
+          earned_at,
+          badge_id,
+          badges!inner (
+            badge_id,
+            name,
+            icon_name,
+            description
+          )
+        `)
         .eq('user_id', user.id)
         .order('earned_at', { ascending: false });
+
+      // Transformer pour compatibilité avec le reste du code
+      const badgesData = rawBadgesData?.map(b => ({
+        badge_id: b.badge_id,
+        badge_name: b.badges.name, // Pour compatibilité
+        badge_icon: b.badges.icon_name,
+        badge_description: b.badges.description,
+        earned_at: b.earned_at
+      })) || [];
 
       if (badgesError) {
         console.error('❌ [fetchUserRealData] Erreur user_badges:', badgesError);

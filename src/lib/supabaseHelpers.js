@@ -561,11 +561,22 @@ export const dbHelpers = {
 
   /**
    * Get all badges earned by a user
+   * Returns badges with JOIN to get badge details from badges table
    */
   async getUserBadges(userId) {
-    const { data, error } = await supabase
+    const { data: rawData, error } = await supabase
       .from('user_badges')
-      .select('*')
+      .select(`
+        id,
+        earned_at,
+        badge_id,
+        badges!inner (
+          badge_id,
+          name,
+          icon_name,
+          description
+        )
+      `)
       .eq('user_id', userId)
       .order('earned_at', { ascending: false });
     
@@ -573,23 +584,51 @@ export const dbHelpers = {
       console.warn('User badges error:', error.message);
       return [];
     }
-    return data || [];
+
+    // Transformer pour compatibilité avec le code existant
+    const transformed = rawData?.map(b => ({
+      id: b.id,
+      badge_id: b.badge_id,
+      badge_name: b.badges.name, // Pour compatibilité
+      badge_icon: b.badges.icon_name,
+      badge_description: b.badges.description,
+      earned_at: b.earned_at
+    })) || [];
+
+    return transformed;
   },
 
   /**
    * Award a badge to a user
+   * NOTE: badgeData should contain badge_id (FK to badges table)
    */
   async awardBadge(userId, badgeData) {
     try {
+      // Si badgeData contient un badge_id, l'utiliser directement
+      // Sinon, chercher le badge par son nom dans la table badges
+      let badgeId = badgeData.badge_id;
+      
+      if (!badgeId && badgeData.name) {
+        // Rechercher le badge_id dans la table badges par nom
+        const { data: badgeInfo, error: searchError } = await supabase
+          .from('badges')
+          .select('badge_id')
+          .eq('name', badgeData.name)
+          .single();
+        
+        if (searchError || !badgeInfo) {
+          console.warn('Badge not found in badges table:', badgeData.name);
+          return { success: false, error: 'Badge not found', code: 'BADGE_NOT_FOUND' };
+        }
+        
+        badgeId = badgeInfo.badge_id;
+      }
+
       const { data, error } = await supabase
         .from('user_badges')
         .insert({
           user_id: userId,
-          badge_name: badgeData.name,
-          badge_type: badgeData.type,
-          badge_description: badgeData.description,
-          badge_icon: badgeData.icon,
-          condition_value: badgeData.condition_value || null
+          badge_id: badgeId // Nouvelle structure: FK vers badges.badge_id
         })
         .select()
         .single();
