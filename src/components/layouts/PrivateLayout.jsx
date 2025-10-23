@@ -19,7 +19,8 @@ function Breadcrumb() {
     'chatbot': 'Chatbot',
     'exam': 'Exam',
     'my-shared-links': 'Mes Liens de Partage',
-    'payment': 'Paiement'
+    'payment': 'Paiement',
+    'orientation': 'Orientation Professionnelle'
   };
 
   // Mapping des URLs vers des liens de redirection
