@@ -33,6 +33,7 @@ const AdvancedAnalytics = () => {
   const [subjectPerformance, setSubjectPerformance] = useState([]);
   const [subjectStatsFromDB, setSubjectStatsFromDB] = useState([]); // ✅ Stats pré-calculées
   const [timeAnalysis, setTimeAnalysis] = useState([]);
+  const [weeklyHeatmap, setWeeklyHeatmap] = useState([]); // ✅ Heatmap temporelle
   const [weakPoints, setWeakPoints] = useState([]);
   const [strengths, setStrengths] = useState([]);
 
@@ -69,9 +70,30 @@ const AdvancedAnalytics = () => {
       console.log('📊 [Analytics] Stats DB par matière:', dbSubjectStats?.length || 0, 'matières');
       setSubjectStatsFromDB(dbSubjectStats || []);
 
-      // Progression des chapitres complétés (user_progress)
-      // TODO: user_progress table doesn't have created_at column
-      const lessonData = [];
+      // ✅ Progression des chapitres complétés avec timestamps (user_progress)
+      const { data: lessonData } = await supabase
+        .from('user_progress')
+        .select(`
+          id,
+          chapitre_id,
+          completed,
+          time_spent,
+          created_at,
+          updated_at,
+          chapitres:chapitre_id (
+            title,
+            matieres:matiere_id (
+              name,
+              color
+            )
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('completed', true)
+        .gte('created_at', thirtyDaysAgo.toISOString())
+        .order('created_at', { ascending: true });
+
+      console.log('📚 [Analytics] Lesson data with timestamps:', lessonData?.length || 0, 'chapitres');
 
       // Générer les données de progression temporelle
       const progressionByDay = generateProgressionTimeline(quizData, lessonData);
@@ -90,6 +112,11 @@ const AdvancedAnalytics = () => {
       // Analyse temporelle (meilleurs moments)
       const timeStats = analyzeStudyTime(quizData, lessonData);
       setTimeAnalysis(timeStats);
+
+      // ✅ Heatmap temporelle (jours x heures avec timestamps)
+      const weeklyHeatmapData = generateWeeklyHeatmap(quizData, lessonData);
+      console.log('📅 [Analytics] Weekly heatmap:', weeklyHeatmapData?.length || 0, 'cells');
+      setWeeklyHeatmap(weeklyHeatmapData);
 
       // Identifier les points faibles et forces
       const { weak, strong } = identifyWeakStrong(quizData);
@@ -113,7 +140,7 @@ const AdvancedAnalytics = () => {
     }
   };
 
-  // Générer la timeline de progression (30 jours)
+  // ✅ Générer la timeline de progression (30 jours avec timestamps réels)
   const generateProgressionTimeline = (quizData, lessonData) => {
     const timeline = [];
     const today = new Date();
@@ -123,10 +150,12 @@ const AdvancedAnalytics = () => {
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
       
+      // Quiz avec completed_at
       const dayQuizzes = quizData?.filter(q => 
         q.completed_at.startsWith(dateStr)
       ) || [];
       
+      // ✅ Chapitres avec created_at (timestamp précis)
       const dayLessons = lessonData?.filter(l => 
         l.created_at?.startsWith(dateStr)
       ) || [];
@@ -260,24 +289,29 @@ const AdvancedAnalytics = () => {
     }).sort((a, b) => b.avgScore - a.avgScore);
   };
 
-  // Analyser les meilleurs moments d'étude
+  // ✅ Analyser les meilleurs moments d'étude (utilise timestamps)
   const analyzeStudyTime = (quizData, lessonData) => {
     const hours = Array(24).fill(0).map((_, i) => ({
       hour: `${i}h`,
       count: 0,
       avgScore: 0,
-      scores: []
+      scores: [],
+      totalTime: 0 // En minutes
     }));
     
+    // Analyser les quiz (avec completed_at)
     quizData?.forEach(quiz => {
       const hour = new Date(quiz.completed_at).getHours();
       hours[hour].count++;
       hours[hour].scores.push(quiz.score);
+      hours[hour].totalTime += quiz.time_taken || 0;
     });
     
+    // ✅ Analyser les chapitres (avec created_at timestamp)
     lessonData?.forEach(lesson => {
-      const hour = new Date(lesson.completed_at).getHours();
+      const hour = new Date(lesson.created_at).getHours();
       hours[hour].count++;
+      hours[hour].totalTime += lesson.time_spent || 0;
     });
     
     // Calculer moyenne par heure
@@ -287,10 +321,72 @@ const AdvancedAnalytics = () => {
           h.scores.reduce((sum, s) => sum + s, 0) / h.scores.length
         );
       }
+      // Convertir en minutes
+      h.totalTime = Math.round(h.totalTime / 60);
     });
     
     // Retourner seulement les heures avec activité
     return hours.filter(h => h.count > 0);
+  };
+
+  // ✅ Générer heatmap temporelle (jours x heures) avec timestamps
+  const generateWeeklyHeatmap = (quizData, lessonData) => {
+    const heatmap = [];
+    const days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+    const hours = Array.from({ length: 24 }, (_, i) => i);
+
+    // Initialiser la grille
+    days.forEach(day => {
+      hours.forEach(hour => {
+        heatmap.push({
+          day,
+          hour,
+          count: 0,
+          avgScore: 0,
+          scores: [],
+          totalTime: 0
+        });
+      });
+    });
+
+    // Remplir avec les données de quiz
+    quizData?.forEach(quiz => {
+      const date = new Date(quiz.completed_at);
+      const day = days[date.getDay()];
+      const hour = date.getHours();
+      
+      const cell = heatmap.find(h => h.day === day && h.hour === hour);
+      if (cell) {
+        cell.count++;
+        cell.scores.push(quiz.score);
+        cell.totalTime += quiz.time_taken || 0;
+      }
+    });
+
+    // Remplir avec les données de chapitres (created_at)
+    lessonData?.forEach(lesson => {
+      const date = new Date(lesson.created_at);
+      const day = days[date.getDay()];
+      const hour = date.getHours();
+      
+      const cell = heatmap.find(h => h.day === day && h.hour === hour);
+      if (cell) {
+        cell.count++;
+        cell.totalTime += lesson.time_spent || 0;
+      }
+    });
+
+    // Calculer les moyennes
+    heatmap.forEach(cell => {
+      if (cell.scores.length > 0) {
+        cell.avgScore = Math.round(
+          cell.scores.reduce((sum, s) => sum + s, 0) / cell.scores.length
+        );
+      }
+      cell.totalTime = Math.round(cell.totalTime / 60); // En minutes
+    });
+
+    return heatmap.filter(h => h.count > 0); // Seulement les cellules avec activité
   };
 
   // ✅ Identifier points faibles et forces (utilise quiz_with_subject)
