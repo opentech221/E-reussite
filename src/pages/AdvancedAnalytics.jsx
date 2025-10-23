@@ -819,31 +819,55 @@ const AdvancedAnalytics = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4">
-                {['Mathématiques', 'Physique', 'Chimie', 'SVT', 'Français', 'Anglais'].map(subject => (
-                  <div key={subject} className="space-y-2">
-                    <div className="font-medium text-sm">{subject}</div>
-                    <div className="grid grid-cols-4 gap-2">
-                      {heatmapData
-                        .filter(d => d.subject === subject)
-                        .map((cell, index) => (
-                          <div
-                            key={index}
-                            className="h-16 rounded-lg flex flex-col items-center justify-center transition-all hover:scale-105"
-                            style={{ backgroundColor: getHeatmapColor(cell.score) }}
-                          >
-                            <div className="text-white font-bold text-lg">
-                              {cell.score > 0 ? `${cell.score}%` : '-'}
-                            </div>
-                            <div className="text-white text-xs opacity-80">
-                              {cell.week}
-                            </div>
-                          </div>
-                        ))}
+              {/* ✅ Extraire les matières uniques des données réelles */}
+              {(() => {
+                const uniqueSubjects = [...new Set(heatmapData.map(d => d.subject))];
+                
+                if (uniqueSubjects.length === 0) {
+                  return (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <p>Aucune donnée de performance disponible</p>
+                      <p className="text-sm mt-2">Complétez des quiz pour voir votre heatmap</p>
                     </div>
+                  );
+                }
+                
+                return (
+                  <div className="grid gap-4">
+                    {uniqueSubjects.map(subject => {
+                      const subjectCells = heatmapData.filter(d => d.subject === subject);
+                      
+                      return (
+                        <div key={subject} className="space-y-2">
+                          <div className="font-medium text-sm">{subject}</div>
+                          <div className="grid grid-cols-4 gap-2">
+                            {subjectCells.length > 0 ? (
+                              subjectCells.map((cell, index) => (
+                                <div
+                                  key={index}
+                                  className="h-16 rounded-lg flex flex-col items-center justify-center transition-all hover:scale-105"
+                                  style={{ backgroundColor: getHeatmapColor(cell.score) }}
+                                >
+                                  <div className="text-white font-bold text-lg">
+                                    {cell.score > 0 ? `${cell.score}%` : '-'}
+                                  </div>
+                                  <div className="text-white text-xs opacity-80">
+                                    {cell.week}
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="col-span-4 text-center text-xs text-muted-foreground py-2">
+                                Aucune donnée pour cette matière
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
+                );
+              })()}
               
               {/* Légende */}
               <div className="flex items-center justify-center gap-4 mt-6 text-xs">
@@ -1029,6 +1053,88 @@ const AdvancedAnalytics = () => {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* ✅ Weekly Heatmap - Phase 3 (7 jours x 24 heures) */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Heatmap Hebdomadaire d'Activité</CardTitle>
+              <CardDescription>
+                Votre activité sur les 7 derniers jours (par heure)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {weeklyHeatmap && weeklyHeatmap.length > 0 ? (
+                <>
+                  {/* Grille 7 jours x heures */}
+                  <div className="grid gap-2">
+                    {['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'].map((day, dayIndex) => {
+                      const dayCells = weeklyHeatmap.filter(cell => cell.day === day);
+                      
+                      return (
+                        <div key={day} className="flex items-center gap-2">
+                          <div className="w-20 text-xs font-medium text-right pr-2">{day.substring(0, 3)}</div>
+                          <div className="flex-1 grid grid-cols-24 gap-1">
+                            {Array.from({ length: 24 }, (_, hourIndex) => {
+                              const cell = dayCells.find(c => c.hour === hourIndex);
+                              const intensity = cell?.count || 0;
+                              const bgColor = 
+                                intensity === 0 ? '#f3f4f6' :
+                                intensity === 1 ? '#bfdbfe' :
+                                intensity === 2 ? '#60a5fa' :
+                                intensity >= 3 ? '#2563eb' : '#f3f4f6';
+                              
+                              return (
+                                <div
+                                  key={hourIndex}
+                                  className="h-6 rounded-sm transition-all hover:scale-110"
+                                  style={{ backgroundColor: bgColor }}
+                                  title={`${day} ${hourIndex}h: ${intensity} activité(s)`}
+                                />
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Légende heures */}
+                  <div className="flex items-center justify-between mt-4 text-xs text-muted-foreground">
+                    <span>0h</span>
+                    <span>6h</span>
+                    <span>12h</span>
+                    <span>18h</span>
+                    <span>23h</span>
+                  </div>
+
+                  {/* Légende intensité */}
+                  <div className="flex items-center justify-center gap-4 mt-4 text-xs">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded" style={{ backgroundColor: '#f3f4f6' }}></div>
+                      <span>Aucune</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded" style={{ backgroundColor: '#bfdbfe' }}></div>
+                      <span>Faible</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded" style={{ backgroundColor: '#60a5fa' }}></div>
+                      <span>Moyenne</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded" style={{ backgroundColor: '#2563eb' }}></div>
+                      <span>Élevée</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  <p>Aucune donnée d'activité disponible</p>
+                  <p className="text-sm mt-2">Complétez des quiz et leçons pour voir votre heatmap hebdomadaire</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
