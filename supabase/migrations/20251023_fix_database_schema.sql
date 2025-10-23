@@ -78,82 +78,19 @@ BEGIN
 END $$;
 
 -- ============================================
--- 3. Créer table badges (si elle n'existe pas)
+-- 3. BADGES - Déjà gérés par migration V3
 -- ============================================
-CREATE TABLE IF NOT EXISTS badges (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    badge_id VARCHAR(100) UNIQUE NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    icon VARCHAR(50),
-    category VARCHAR(50),
-    points_required INTEGER DEFAULT 0,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    
-    CONSTRAINT badges_badge_id_check CHECK (badge_id ~ '^[a-z_]+$')
-);
+-- Note: La table badges et la Foreign Key user_badges.badge_id → badges.badge_id
+-- ont été créées et corrigées par 20251023_fix_badges_fk_v3.sql
+-- Cette section est volontairement vide pour éviter les conflits.
 
-COMMENT ON TABLE badges IS 'Catalogue des badges disponibles';
-COMMENT ON COLUMN badges.badge_id IS 'Identifiant unique du badge (ex: knowledge_seeker)';
-COMMENT ON COLUMN badges.name IS 'Nom affiché du badge';
-COMMENT ON COLUMN badges.icon IS 'Emoji ou icône du badge';
-COMMENT ON COLUMN badges.category IS 'Catégorie (quiz, course, streak, social)';
-
--- Insérer les badges existants (d'après BadgeSystem.jsx)
-INSERT INTO badges (badge_id, name, description, icon, category, points_required)
-VALUES 
-    ('first_quiz', 'Premier Quiz', 'Terminer son premier quiz', '🎯', 'quiz', 0),
-    ('quiz_master', 'Maître des Quiz', 'Terminer 10 quiz', '🏆', 'quiz', 100),
-    ('perfect_score', 'Score Parfait', 'Obtenir 100% à un quiz', '⭐', 'quiz', 50),
-    ('speed_demon', 'Rapide comme l''éclair', 'Terminer un quiz en moins de 2 minutes', '⚡', 'quiz', 30),
-    ('knowledge_seeker', 'Chercheur de Savoir', 'Consulter 5 cours différents', '📚', 'course', 50),
-    ('course_champion', 'Champion des Cours', 'Terminer 3 cours complets', '🎓', 'course', 150),
-    ('chapter_master', 'Maître des Chapitres', 'Compléter 10 chapitres', '📖', 'course', 100),
-    ('wisdom_keeper', 'Gardien de la Sagesse', 'Terminer 5 cours complets', '🦉', 'course', 250),
-    ('streak_starter', 'Début de Série', 'Maintenir une série de 3 jours', '🔥', 'streak', 30),
-    ('week_warrior', 'Guerrier Hebdomadaire', 'Série de 7 jours consécutifs', '💪', 'streak', 70),
-    ('month_master', 'Maître du Mois', 'Série de 30 jours consécutifs', '🌟', 'streak', 300),
-    ('social_butterfly', 'Papillon Social', 'Partager 5 réussites', '🦋', 'social', 50),
-    ('helpful_peer', 'Camarade Serviable', 'Aider 10 autres étudiants', '🤝', 'social', 100)
-ON CONFLICT (badge_id) DO NOTHING;
-
--- ============================================
--- 4. Ajouter foreign key dans user_badges vers badges
--- ============================================
-DO $$ 
+DO $$
 BEGIN
-    -- Vérifier si la colonne badge_id existe dans user_badges
-    IF EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'user_badges' 
-        AND column_name = 'badge_name'
-    ) AND NOT EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'user_badges' 
-        AND column_name = 'badge_id'
-    ) THEN
-        -- Renommer badge_name en badge_id pour cohérence
-        ALTER TABLE user_badges 
-        RENAME COLUMN badge_name TO badge_id;
-    END IF;
-
-    -- Ajouter la foreign key si elle n'existe pas
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.table_constraints 
-        WHERE constraint_name = 'user_badges_badge_id_fkey'
-    ) THEN
-        -- Note: On ne peut pas créer la FK si les valeurs actuelles ne correspondent pas
-        -- Il faudra vérifier manuellement les données
-        -- ALTER TABLE user_badges 
-        -- ADD CONSTRAINT user_badges_badge_id_fkey 
-        -- FOREIGN KEY (badge_id) REFERENCES badges(badge_id) ON DELETE CASCADE;
-        
-        RAISE NOTICE 'Foreign key non créée - vérifier d''abord les données existantes';
-    END IF;
+    RAISE NOTICE '⏭️  Section badges sautée - déjà gérée par migration V3';
 END $$;
 
 -- ============================================
--- 5. Améliorer les index pour performance
+-- 4. Améliorer les index pour performance
 -- ============================================
 
 -- Index sur user_progress pour les queries temporelles
@@ -173,7 +110,7 @@ CREATE INDEX IF NOT EXISTS idx_user_badges_user_earned
 ON user_badges(user_id, earned_at DESC);
 
 -- ============================================
--- 6. Ajouter des vues utiles pour Analytics
+-- 5. Ajouter des vues utiles pour Analytics
 -- ============================================
 
 -- Vue pour obtenir le sujet d'un quiz
