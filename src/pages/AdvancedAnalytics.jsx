@@ -31,6 +31,7 @@ const AdvancedAnalytics = () => {
   const [predictionData, setPredictionData] = useState(null);
   const [trendsData, setTrendsData] = useState([]);
   const [subjectPerformance, setSubjectPerformance] = useState([]);
+  const [subjectStatsFromDB, setSubjectStatsFromDB] = useState([]); // ✅ Stats pré-calculées
   const [timeAnalysis, setTimeAnalysis] = useState([]);
   const [weakPoints, setWeakPoints] = useState([]);
   const [strengths, setStrengths] = useState([]);
@@ -49,13 +50,24 @@ const AdvancedAnalytics = () => {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-      // Progression des quiz
+      // ✅ Progression des quiz avec vue SQL enrichie (quiz_with_subject)
       const { data: quizData } = await supabase
-        .from('quiz_results')
-        .select('score, completed_at')
+        .from('quiz_with_subject')
+        .select('id, score, completed_at, time_taken, subject_name, subject_color, chapter_title')
         .eq('user_id', user.id)
         .gte('completed_at', thirtyDaysAgo.toISOString())
         .order('completed_at', { ascending: true });
+
+      console.log('📊 [Analytics] Quiz data from view:', quizData?.length || 0, 'quiz');
+
+      // ✅ Récupérer statistiques pré-calculées par matière (user_subject_stats)
+      const { data: dbSubjectStats } = await supabase
+        .from('user_subject_stats')
+        .select('matiere_id, subject_name, subject_color, chapters_completed, total_time_seconds, last_activity')
+        .eq('user_id', user.id);
+      
+      console.log('📊 [Analytics] Stats DB par matière:', dbSubjectStats?.length || 0, 'matières');
+      setSubjectStatsFromDB(dbSubjectStats || []);
 
       // Progression des chapitres complétés (user_progress)
       // TODO: user_progress table doesn't have created_at column
@@ -67,10 +79,12 @@ const AdvancedAnalytics = () => {
 
       // Heatmap de performance par matière et période
       const heatmap = generateHeatmapData(quizData);
+      console.log('🔥 [Analytics] Heatmap data:', heatmap?.length || 0, 'cells');
       setHeatmapData(heatmap);
 
       // Performance par matière
       const subjectStats = calculateSubjectPerformance(quizData);
+      console.log('📈 [Analytics] Subject performance:', subjectStats?.length || 0, 'matières');
       setSubjectPerformance(subjectStats);
 
       // Analyse temporelle (meilleurs moments)
@@ -79,6 +93,8 @@ const AdvancedAnalytics = () => {
 
       // Identifier les points faibles et forces
       const { weak, strong } = identifyWeakStrong(quizData);
+      console.log('⚠️ [Analytics] Points faibles:', weak?.length || 0);
+      console.log('✅ [Analytics] Points forts:', strong?.length || 0);
       setWeakPoints(weak);
       setStrengths(strong);
 
@@ -132,17 +148,116 @@ const AdvancedAnalytics = () => {
   };
 
   // Générer les données de heatmap
+  // ✅ Générer heatmap de performance par matière et semaine (utilise quiz_with_subject)
   const generateHeatmapData = (quizData) => {
-    // TODO: Implement with proper subject relationships
-    // For now, return empty array to avoid errors
-    return [];
+    if (!quizData || quizData.length === 0) return [];
+
+    // Créer une map: matière -> [semaine1, semaine2, ...]
+    const heatmap = {};
+    const weekLabels = [];
+    
+    // Générer les 4 dernières semaines
+    for (let i = 3; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - (i * 7));
+      const weekLabel = `S${Math.floor(date.getDate() / 7) + 1}`;
+      weekLabels.push(weekLabel);
+    }
+
+    // Initialiser la structure
+    const subjects = [...new Set(quizData.map(q => q.subject_name))];
+    subjects.forEach(subject => {
+      heatmap[subject] = weekLabels.map(week => ({
+        week,
+        subject,
+        avgScore: 0,
+        count: 0,
+        scores: []
+      }));
+    });
+
+    // Remplir avec les données réelles
+    quizData.forEach(quiz => {
+      const subject = quiz.subject_name || 'Autre';
+      const quizDate = new Date(quiz.completed_at);
+      const daysAgo = Math.floor((new Date() - quizDate) / (1000 * 60 * 60 * 24));
+      const weekIndex = Math.min(3, Math.floor(daysAgo / 7));
+      
+      if (heatmap[subject] && heatmap[subject][weekIndex]) {
+        heatmap[subject][weekIndex].scores.push(quiz.score);
+        heatmap[subject][weekIndex].count++;
+      }
+    });
+
+    // Calculer les moyennes
+    const result = [];
+    Object.keys(heatmap).forEach(subject => {
+      heatmap[subject].forEach(cell => {
+        if (cell.scores.length > 0) {
+          cell.avgScore = Math.round(
+            cell.scores.reduce((sum, s) => sum + s, 0) / cell.scores.length
+          );
+          result.push({
+            subject: cell.subject,
+            week: cell.week,
+            score: cell.avgScore,
+            count: cell.count
+          });
+        }
+      });
+    });
+
+    return result;
   };
 
-  // Calculer performance par matière
+  // ✅ Calculer performance par matière (utilise quiz_with_subject)
   const calculateSubjectPerformance = (quizData) => {
-    // TODO: Implement with proper subject relationships
-    // For now, return empty array to avoid errors
-    return [];
+    if (!quizData || quizData.length === 0) return [];
+
+    // Agréger les données par matière
+    const subjectMap = {};
+    
+    quizData.forEach(quiz => {
+      const subject = quiz.subject_name || 'Autre';
+      
+      if (!subjectMap[subject]) {
+        subjectMap[subject] = {
+          subject,
+          color: quiz.subject_color || '#6B7280',
+          scores: [],
+          totalQuizzes: 0,
+          totalTime: 0,
+          chapters: new Set()
+        };
+      }
+      
+      subjectMap[subject].scores.push(quiz.score);
+      subjectMap[subject].totalQuizzes++;
+      subjectMap[subject].totalTime += quiz.time_taken || 0;
+      if (quiz.chapter_title) {
+        subjectMap[subject].chapters.add(quiz.chapter_title);
+      }
+    });
+
+    // Convertir en tableau avec statistiques calculées
+    return Object.values(subjectMap).map(item => {
+      const avgScore = Math.round(
+        item.scores.reduce((sum, s) => sum + s, 0) / item.scores.length
+      );
+      
+      const trend = calculateTrend(item.scores);
+      
+      return {
+        subject: item.subject,
+        color: item.color,
+        avgScore,
+        totalQuizzes: item.totalQuizzes,
+        totalTime: Math.round(item.totalTime / 60), // En minutes
+        chaptersCount: item.chapters.size,
+        trend, // +/- amélioration
+        scores: item.scores // Pour graphiques détaillés
+      };
+    }).sort((a, b) => b.avgScore - a.avgScore);
   };
 
   // Analyser les meilleurs moments d'étude
@@ -178,14 +293,62 @@ const AdvancedAnalytics = () => {
     return hours.filter(h => h.count > 0);
   };
 
-  // Identifier points faibles et forces
+  // ✅ Identifier points faibles et forces (utilise quiz_with_subject)
   const identifyWeakStrong = (quizData) => {
-    // TODO: Implement with proper subject relationships
-    // For now, return empty arrays
-    return {
-      weak: [],
-      strong: []
-    };
+    if (!quizData || quizData.length === 0) {
+      return { weak: [], strong: [] };
+    }
+
+    // Agréger par matière
+    const subjectMap = {};
+    
+    quizData.forEach(quiz => {
+      const subject = quiz.subject_name || 'Autre';
+      
+      if (!subjectMap[subject]) {
+        subjectMap[subject] = {
+          subject,
+          color: quiz.subject_color || '#6B7280',
+          scores: [],
+          chapters: new Set()
+        };
+      }
+      
+      subjectMap[subject].scores.push(quiz.score);
+      if (quiz.chapter_title) {
+        subjectMap[subject].chapters.add(quiz.chapter_title);
+      }
+    });
+
+    // Calculer les moyennes et identifier faibles/forts
+    const subjects = Object.values(subjectMap).map(item => ({
+      subject: item.subject,
+      color: item.color,
+      avgScore: Math.round(
+        item.scores.reduce((sum, s) => sum + s, 0) / item.scores.length
+      ),
+      quizCount: item.scores.length,
+      chaptersCount: item.chapters.size
+    }));
+
+    // Points faibles: score < 50% ou peu de quiz
+    const weak = subjects
+      .filter(s => s.avgScore < 50 || s.quizCount < 3)
+      .map(s => ({
+        ...s,
+        reason: s.avgScore < 50 
+          ? `Moyenne faible (${s.avgScore}%)`
+          : 'Peu de pratique'
+      }))
+      .slice(0, 5);
+
+    // Points forts: score >= 75%
+    const strong = subjects
+      .filter(s => s.avgScore >= 75 && s.quizCount >= 3)
+      .sort((a, b) => b.avgScore - a.avgScore)
+      .slice(0, 5);
+
+    return { weak, strong };
   };
 
   // Calculer la tendance (positif = amélioration)
