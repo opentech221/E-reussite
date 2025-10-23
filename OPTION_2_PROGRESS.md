@@ -4,10 +4,10 @@
 
 Implémentation des nouvelles fonctionnalités du schéma de base de données créées lors de l'Option 4.
 
-**Statut global** : 🟢 En cours - Phase 2 terminée
+**Statut global** : 🟢 En cours - Phase 3 terminée
 
 **Date de début** : 23 octobre 2025 - 01:14 UTC  
-**Dernière mise à jour** : 23 octobre 2025 - 01:35 UTC
+**Dernière mise à jour** : 23 octobre 2025 - 01:42 UTC
 
 ---
 
