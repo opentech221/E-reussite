@@ -613,6 +613,18 @@ const Profile = () => {
                           </div>
                         )}
 
+                        {/* Bouton Gérer l'abonnement pour utilisateurs actifs */}
+                        {subscription.status === 'active' && (
+                          <Button 
+                            onClick={() => navigate('/payment')}
+                            variant="outline"
+                            className="w-full border-2 border-primary/30 dark:border-primary/50 text-primary dark:text-primary-light hover:bg-primary/5 dark:hover:bg-primary/10 font-semibold mt-4"
+                          >
+                            <CreditCard className="w-4 h-4 mr-2" />
+                            Gérer mon abonnement
+                          </Button>
+                        )}
+
                         {/* CTA pour payer si en essai */}
                         {subscription.status === 'trial' && (
                           <Button 
