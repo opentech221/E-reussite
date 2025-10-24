@@ -182,7 +182,7 @@ const Orientation = () => {
               Trouve ton Métier Idéal
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Un test intelligent de 20 questions pour découvrir les carrières qui correspondent à ta personnalité, tes talents, ton contexte socio-économique et tes ambitions.
+              Un test intelligent de 20 questions pour découvrir les carrières qui correspondent à ta personnalité, tes talents, <strong>ton contexte socio-économique</strong> et tes ambitions.
             </p>
           </motion.div>
 
@@ -210,7 +210,7 @@ const Orientation = () => {
               <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center mb-4">
                 <Briefcase className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">20 Métiers</h3>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">30 Métiers</h3>
               <p className="text-gray-600 dark:text-gray-400">Adaptés au marché sénégalais et africain</p>
             </motion.div>
 

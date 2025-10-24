@@ -88,12 +88,6 @@ export async function getOrientationFromProfile(userId) {
  */
 export async function prefillSocioEconomicQuestions(userId) {
   try {
-    // TODO: Ajouter colonnes financial_situation, network_support, location, religious_values, academic_level à la table profiles
-    // Pour l'instant, retourner valeurs vides
-    console.log('⚠️ Pré-remplissage désactivé - colonnes manquantes dans profiles');
-    return { q13: null, q14: null, q15: null, q16: null, q17: null };
-
-    /* CODE DÉSACTIVÉ TEMPORAIREMENT
     const { data, error } = await supabase
       .from('profiles')
       .select('financial_situation, network_support, location, religious_values, academic_level')
@@ -118,7 +112,6 @@ export async function prefillSocioEconomicQuestions(userId) {
 
     console.log('✅ Questions pré-remplies depuis profil:', prefilled);
     return prefilled;
-    */
   } catch (error) {
     console.error('❌ Erreur pré-remplissage questions:', error);
     return { q13: null, q14: null, q15: null, q16: null, q17: null };
