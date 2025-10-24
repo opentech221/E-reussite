@@ -127,7 +127,7 @@ const Orientation = () => {
         topCareers.map(c => ({
           slug: c.slug,
           title: c.title,
-          score: c.match_score,
+          score: c.compatibility_score, // ✅ Correction: compatibility_score au lieu de match_score
           category: c.category
         }))
       );
