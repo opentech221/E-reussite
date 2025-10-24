@@ -35,7 +35,7 @@ export async function saveOrientationToProfile(userId, testId, topCareers) {
         orientation_completed_at: new Date().toISOString(),
         top_career_match_score: topScore
       })
-      .eq('user_id', userId)
+      .eq('id', userId)
       .select()
       .single();
 
@@ -59,7 +59,7 @@ export async function getOrientationFromProfile(userId) {
     const { data, error } = await supabase
       .from('profiles')
       .select('orientation_test_id, preferred_careers, orientation_completed_at, top_career_match_score')
-      .eq('user_id', userId)
+      .eq('id', userId)
       .single();
 
     if (error) throw error;
@@ -88,10 +88,16 @@ export async function getOrientationFromProfile(userId) {
  */
 export async function prefillSocioEconomicQuestions(userId) {
   try {
+    // TODO: Ajouter colonnes financial_situation, network_support, location, religious_values, academic_level à la table profiles
+    // Pour l'instant, retourner valeurs vides
+    console.log('⚠️ Pré-remplissage désactivé - colonnes manquantes dans profiles');
+    return { q13: null, q14: null, q15: null, q16: null, q17: null };
+
+    /* CODE DÉSACTIVÉ TEMPORAIREMENT
     const { data, error } = await supabase
       .from('profiles')
       .select('financial_situation, network_support, location, religious_values, academic_level')
-      .eq('user_id', userId)
+      .eq('id', userId)
       .single();
 
     if (error) throw error;
@@ -112,6 +118,7 @@ export async function prefillSocioEconomicQuestions(userId) {
 
     console.log('✅ Questions pré-remplies depuis profil:', prefilled);
     return prefilled;
+    */
   } catch (error) {
     console.error('❌ Erreur pré-remplissage questions:', error);
     return { q13: null, q14: null, q15: null, q16: null, q17: null };
@@ -171,8 +178,8 @@ export async function checkProfileCompleteness(userId) {
   try {
     const { data, error } = await supabase
       .from('profiles')
-      .select('full_name, phone, location, financial_situation, network_support, religious_values, orientation_completed_at')
-      .eq('user_id', userId)
+      .select('full_name, phone, location, orientation_completed_at')
+      .eq('id', userId)
       .single();
 
     if (error) throw error;
@@ -181,9 +188,6 @@ export async function checkProfileCompleteness(userId) {
     if (!data.full_name) missingFields.push('full_name');
     if (!data.phone) missingFields.push('phone');
     if (!data.location) missingFields.push('location');
-    if (!data.financial_situation) missingFields.push('financial_situation');
-    if (!data.network_support) missingFields.push('network_support');
-    if (!data.religious_values) missingFields.push('religious_values');
 
     return {
       isComplete: missingFields.length === 0,
