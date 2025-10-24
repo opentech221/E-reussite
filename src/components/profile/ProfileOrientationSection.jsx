@@ -19,7 +19,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getOrientationFromProfile, getPreferredCareersDetails } from '../services/profileOrientationService';
+import { getOrientationFromProfile, getPreferredCareersDetails } from '@/services/profileOrientationService';
 
 const ProfileOrientationSection = ({ userId }) => {
   const [loading, setLoading] = useState(true);
