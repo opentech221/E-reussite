@@ -5,7 +5,7 @@
  * et les résultats du test d'orientation professionnelle.
  */
 
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '@/lib/customSupabaseClient';
 
 /**
  * Sauvegarde les résultats d'orientation dans le profil utilisateur
