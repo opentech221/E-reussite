@@ -714,7 +714,15 @@ const CoachIA = () => {
                     ) : (
                       <div className="space-y-4">
                         {messages.map((msg) => (
-                          <MessageItem key={msg.id} message={msg} isUser={msg.role === 'user'} />
+                          <MessageItem 
+                            key={msg.id} 
+                            message={msg} 
+                            isUser={msg.role === 'user'}
+                            canEdit={false}
+                            canDelete={false}
+                            onEdit={() => {}}
+                            onDelete={() => {}}
+                          />
                         ))}
                       </div>
                     )}
