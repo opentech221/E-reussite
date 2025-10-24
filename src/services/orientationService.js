@@ -455,62 +455,70 @@ export const matchCareers = async (scores, preferences, userLevel) => {
     console.log(`📚 [Matching] ${careers.length} métiers disponibles`);
 
     // Calculer score de compatibilité pour chaque métier
+    // Formule normalisée et reproductible :
+    // - interestSimilarity: 0-100 (moyenne des différences par domaine)
+    // - ensuite on applique des bonus/penalités bornés et on combine
     const careerScores = careers.map(career => {
-      let compatibilityScore = 0;
+      // 1) intérêt similarity (0-100)
+      const domains = ['scientific', 'literary', 'technical', 'artistic', 'social', 'commercial'];
+      let totalSim = 0;
+      domains.forEach(domain => {
+        const userVal = scores[domain] || 0;
+        const careerVal = career[`interest_${domain}`] || 0;
+        const sim = 100 - Math.abs(careerVal - userVal); // 0..100
+        totalSim += sim;
+      });
+      const interestSimilarity = totalSim / domains.length; // 0..100
 
-      // Score basé sur les intérêts (60% du total)
-      compatibilityScore += (scores.scientific * career.interest_scientific) / 100 * 0.10;
-      compatibilityScore += (scores.literary * career.interest_literary) / 100 * 0.10;
-      compatibilityScore += (scores.technical * career.interest_technical) / 100 * 0.10;
-      compatibilityScore += (scores.artistic * career.interest_artistic) / 100 * 0.10;
-      compatibilityScore += (scores.social * career.interest_social) / 100 * 0.10;
-      compatibilityScore += (scores.commercial * career.interest_commercial) / 100 * 0.10;
+      // Base score from interests (weight 0.65)
+      let compatibilityScore = (interestSimilarity * 0.65);
 
-      // --- Nouveaux critères socio-économiques ---
-      // 1) Financial compatibility (penalize if user's constraint high and career needs high investment)
-      // career.financial_requirement can be 'low'|'medium'|'high'
-      const finReq = career.financial_requirement || 'medium';
-      const userFin = preferences.financial_constraint || 'medium';
-      const finPenalty = (finReq === 'high' && userFin === 'high') ? -15 : 0;
-      const finMinorPenalty = (finReq === 'medium' && userFin === 'high') ? -7 : 0;
-      compatibilityScore += finPenalty + finMinorPenalty;
-
-      // 2) Family/network bonus — si user a un réseau fort et carrière demande réseau
-      const careerNeedsNetwork = career.requires_network || false;
-      if (careerNeedsNetwork && preferences.network_access === 'strong') compatibilityScore += 10;
-      if (careerNeedsNetwork && preferences.network_access === 'limited') compatibilityScore += 3;
-
-      // 3) Location/opportunities
-      // If user in rural and career opportunities are urban, small penalty
-      const careerLocation = career.preferred_location || 'urban';
-      if (preferences.location === 'rural' && careerLocation === 'urban') compatibilityScore -= 5;
-
-      // 4) Religious compatibility
-      // career.religious_friendly: 'friendly'|'neutral'|'challenging'
-      const relPref = preferences.religious_importance || 0;
-      const careerRel = career.religious_friendly || 'neutral';
-      if (relPref >= 60) {
-        if (careerRel === 'friendly') compatibilityScore += 10;
-        if (careerRel === 'challenging') compatibilityScore -= 10;
+      // 2) environment bonus (0..15)
+      if (preferences.preferred_work_environment && career.work_environment && preferences.preferred_work_environment === career.work_environment) {
+        compatibilityScore += 12; // small, meaningful bonus
       }
 
-      // Bonus environnement de travail (20% du total)
-      if (preferences.preferred_work_environment === career.work_environment) {
-        compatibilityScore += 20;
-      }
-
-      // Bonus matières préférées (20% du total)
+      // 3) subject overlap bonus (0..8)
       if (career.important_subjects && preferences.preferred_subjects) {
         const commonSubjects = career.important_subjects.filter(subject =>
           preferences.preferred_subjects.some(pref => pref.includes(subject) || subject.includes(pref))
         );
-        compatibilityScore += (commonSubjects.length / career.important_subjects.length) * 20;
+        const overlapRatio = commonSubjects.length / Math.max(1, career.important_subjects.length);
+        compatibilityScore += overlapRatio * 8;
       }
 
-      return {
-        ...career,
-        compatibility_score: Math.round(compatibilityScore),
-      };
+      // 4) financial penalty (-20..0)
+      const finReq = career.financial_requirement || 'medium';
+      const userFin = (preferences.financial_constraint || '').toLowerCase();
+      if (userFin.includes('élev') || userFin.includes('ele')) { // 'Élevée' or variants
+        if (finReq === 'high') compatibilityScore -= 20;
+        else if (finReq === 'medium') compatibilityScore -= 8;
+      } else if (userFin.includes('moy')) {
+        if (finReq === 'high') compatibilityScore -= 8;
+      }
+
+      // 5) network bonus (0..10)
+      if (career.requires_network) {
+        const net = (preferences.network_access || '').toLowerCase();
+        if (net.includes('fort')) compatibilityScore += 8;
+        else if (net.includes('lim')) compatibilityScore += 4;
+      }
+
+      // 6) location adjustment (-5..+5)
+      const careerLoc = career.preferred_location || 'urban';
+      if (preferences.location && preferences.location === careerLoc) compatibilityScore += 5;
+      else if ((preferences.location === 'rural' && careerLoc === 'urban') || (preferences.location === 'urban' && careerLoc === 'rural')) compatibilityScore -= 5;
+
+      // 7) religious adjustment (-10..+10)
+      const relPref = preferences.religious_importance || 0;
+      if (relPref >= 60) {
+        if (career.religious_friendly === 'friendly') compatibilityScore += 8;
+        if (career.religious_friendly === 'challenging') compatibilityScore -= 8;
+      }
+
+      // Final clamp and rounding
+      const finalScore = Math.round(Math.max(0, Math.min(100, compatibilityScore)));
+      return { ...career, compatibility_score: finalScore };
     });
 
     // Trier par score décroissant
