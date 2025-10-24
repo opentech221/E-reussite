@@ -154,57 +154,59 @@ const ProfileOrientationSection = ({ userId }) => {
       </div>
 
       {/* Top 3 Carrières */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
           Vos 3 meilleures options :
         </h4>
         {careers.map((career, index) => (
-          <Link
+          <motion.div
             key={career.slug}
-            to={`/orientation?career=${career.slug}`}
-            className="block group"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 hover:border-purple-300 dark:hover:border-purple-700 transition-all"
           >
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-purple-50 dark:hover:bg-purple-900/20 border border-gray-200 dark:border-gray-600 hover:border-purple-300 dark:hover:border-purple-700 transition-all cursor-pointer"
-            >
-              <div className="flex items-center gap-4 flex-1">
-                {/* Rang */}
-                <div className={`
-                  flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm
-                  ${index === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white' : ''}
-                  ${index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-400 text-gray-700' : ''}
-                  ${index === 2 ? 'bg-gradient-to-br from-orange-300 to-orange-400 text-white' : ''}
-                `}>
-                  {index + 1}
-                </div>
-
-                {/* Infos carrière */}
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900 dark:text-gray-100 truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                    {career.title}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">
-                    {career.category}
-                  </p>
-                </div>
-
-                {/* Score */}
-                <div className="text-right">
-                  <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                    {career.match_score}%
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    match
-                  </p>
-                </div>
-
-                <ChevronRight className="h-5 w-5 text-gray-400 dark:text-gray-500 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
+            <div className="flex items-center gap-4 mb-3">
+              {/* Rang */}
+              <div className={`
+                flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm
+                ${index === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white' : ''}
+                ${index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-400 text-gray-700' : ''}
+                ${index === 2 ? 'bg-gradient-to-br from-orange-300 to-orange-400 text-white' : ''}
+              `}>
+                {index + 1}
               </div>
-            </motion.div>
-          </Link>
+
+              {/* Infos carrière */}
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">
+                  {career.title}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">
+                  {career.category}
+                </p>
+              </div>
+
+              {/* Score */}
+              <div className="text-right">
+                <p className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                  {career.match_score}%
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  match
+                </p>
+              </div>
+            </div>
+
+            {/* Bouton Découvrir */}
+            <Link
+              to={`/orientation?career=${career.slug}`}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium rounded-lg transition-all group"
+            >
+              <span>Découvrir ce métier</span>
+              <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </motion.div>
         ))}
       </div>
 
