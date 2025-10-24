@@ -516,6 +516,39 @@ export const matchCareers = async (scores, preferences, userLevel) => {
         if (career.religious_friendly === 'challenging') compatibilityScore -= 8;
       }
 
+      // === NOUVEAUX CRITÈRES PHASE 1.5 ===
+
+      // 8) Difficulté académique vs niveau élève (pénalité si trop difficile)
+      // Détecte si l'élève a des difficultés (scores faibles) et pénalise métiers très difficiles
+      const avgScore = (scores.scientific + scores.literary + scores.technical + scores.artistic + scores.social + scores.commercial) / 6;
+      const academicDiff = career.academic_difficulty || 'medium';
+      
+      if (avgScore < 40) { // Élève en difficulté
+        if (academicDiff === 'very_hard') compatibilityScore -= 15;
+        else if (academicDiff === 'hard') compatibilityScore -= 8;
+      } else if (avgScore < 60) { // Élève moyen
+        if (academicDiff === 'very_hard') compatibilityScore -= 8;
+      }
+
+      // 9) ROI rapide (bonus si contraintes financières ET formation rapide/rentable)
+      if (userFinConstraint.includes('élev') || userFinConstraint.includes('ele')) {
+        const roi = career.roi_months || 24;
+        if (roi <= 12) compatibilityScore += 10; // ROI excellent (1 an max)
+        else if (roi <= 18) compatibilityScore += 6; // ROI bon (18 mois max)
+        else if (roi <= 24) compatibilityScore += 3; // ROI correct (2 ans)
+      }
+
+      // 10) Taux d'insertion professionnelle (bonus si marché porteur)
+      const employmentRate = career.employment_rate_percentage || 70;
+      if (employmentRate >= 90) compatibilityScore += 5; // Très bon débouché
+      else if (employmentRate >= 80) compatibilityScore += 3; // Bon débouché
+      else if (employmentRate < 60) compatibilityScore -= 5; // Marché difficile
+
+      // 11) Tendance du marché (bonus métiers émergents, pénalité métiers déclinants)
+      const trend = career.growth_trend || 'stable';
+      if (trend === 'growing' || trend === 'emerging') compatibilityScore += 4;
+      else if (trend === 'declining') compatibilityScore -= 6;
+
       // Final clamp and rounding
       const finalScore = Math.round(Math.max(0, Math.min(100, compatibilityScore)));
       return { ...career, compatibility_score: finalScore };
