@@ -26,6 +26,13 @@ export async function saveOrientationToProfile(userId, testId, topCareers) {
 
     const topScore = topCareers.length > 0 ? topCareers[0].score : null;
 
+    console.log('💾 [saveOrientationToProfile] Sauvegarde:', {
+      userId,
+      testId,
+      topScore,
+      preferredCareers
+    });
+
     // Mettre à jour le profil
     const { data, error } = await supabase
       .from('profiles')
