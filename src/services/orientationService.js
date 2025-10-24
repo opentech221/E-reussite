@@ -531,7 +531,7 @@ export const matchCareers = async (scores, preferences, userLevel) => {
       }
 
       // 9) ROI rapide (bonus si contraintes financières ET formation rapide/rentable)
-      if (userFinConstraint.includes('élev') || userFinConstraint.includes('ele')) {
+      if (userFin.includes('élev') || userFin.includes('ele')) {
         const roi = career.roi_months || 24;
         if (roi <= 12) compatibilityScore += 10; // ROI excellent (1 an max)
         else if (roi <= 18) compatibilityScore += 6; // ROI bon (18 mois max)
