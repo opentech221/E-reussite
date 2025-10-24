@@ -21,7 +21,15 @@ const Profile = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({ full_name: '', level: '', parcours: '' });
+  const [formData, setFormData] = useState({ 
+    full_name: '', 
+    level: '', 
+    parcours: '',
+    financial_situation: '',
+    network_support: '',
+    religious_values: '',
+    academic_level: ''
+  });
   
   // Hook pour gérer l'abonnement
   const { subscription, loading: subscriptionLoading } = useSubscription();
@@ -43,6 +51,10 @@ const Profile = () => {
           full_name: profileData.full_name || '',
           level: profileData.level || '',
           parcours: profileData.parcours || '',
+          financial_situation: profileData.financial_situation || '',
+          network_support: profileData.network_support || '',
+          religious_values: profileData.religious_values || '',
+          academic_level: profileData.academic_level || ''
         });
       }
       setLoading(false);
@@ -68,6 +80,10 @@ const Profile = () => {
         full_name: formData.full_name,
         level: formData.level,
         parcours: formData.parcours,
+        financial_situation: formData.financial_situation,
+        network_support: formData.network_support,
+        religious_values: formData.religious_values,
+        academic_level: formData.academic_level,
         updated_at: new Date(),
       })
       .eq('id', user.id);
@@ -328,6 +344,84 @@ const Profile = () => {
                             placeholder="Ex: BAC S, BFEM, Licence Informatique..."
                           />
                         </div>
+
+                        {/* Nouveaux champs socio-économiques */}
+                        <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                          <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">
+                            📊 Contexte socio-économique (pour orientation)
+                          </h3>
+                          
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="academic_level" className="text-slate-700 dark:text-slate-200">Niveau académique</Label>
+                              <select
+                                id="academic_level"
+                                name="academic_level"
+                                value={formData.academic_level}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:border-primary focus:ring-primary dark:bg-slate-800 dark:border-slate-600"
+                              >
+                                <option value="">Sélectionner...</option>
+                                <option value="bfem">BFEM</option>
+                                <option value="bac">BAC</option>
+                                <option value="bac+2">BAC+2</option>
+                                <option value="bac+3">BAC+3 (Licence)</option>
+                                <option value="bac+5">BAC+5 (Master)</option>
+                                <option value="doctorat">Doctorat</option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="financial_situation" className="text-slate-700 dark:text-slate-200">Situation financière</Label>
+                              <select
+                                id="financial_situation"
+                                name="financial_situation"
+                                value={formData.financial_situation}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:border-primary focus:ring-primary dark:bg-slate-800 dark:border-slate-600"
+                              >
+                                <option value="">Sélectionner...</option>
+                                <option value="low">Contraintes élevées</option>
+                                <option value="medium">Situation modérée</option>
+                                <option value="high">À l'aise financièrement</option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="network_support" className="text-slate-700 dark:text-slate-200">Réseau professionnel</Label>
+                              <select
+                                id="network_support"
+                                name="network_support"
+                                value={formData.network_support}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:border-primary focus:ring-primary dark:bg-slate-800 dark:border-slate-600"
+                              >
+                                <option value="">Sélectionner...</option>
+                                <option value="strong">Réseau fort</option>
+                                <option value="moderate">Réseau limité</option>
+                                <option value="weak">Peu/pas de réseau</option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="religious_values" className="text-slate-700 dark:text-slate-200">Importance valeurs religieuses</Label>
+                              <select
+                                id="religious_values"
+                                name="religious_values"
+                                value={formData.religious_values}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:border-primary focus:ring-primary dark:bg-slate-800 dark:border-slate-600"
+                              >
+                                <option value="">Sélectionner...</option>
+                                <option value="very_important">Très important</option>
+                                <option value="important">Important</option>
+                                <option value="neutral">Neutre</option>
+                                <option value="not_important">Pas important</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
                         <Button 
                           type="submit"
                           className="w-full bg-gradient-to-r from-primary to-accent text-white font-semibold shadow-lg hover:shadow-xl transition-all"
@@ -349,6 +443,56 @@ const Profile = () => {
                           <span className="text-slate-600 dark:text-slate-300 font-medium">Parcours</span>
                           <span className="font-bold text-slate-900 dark:text-white">{profile.parcours || 'Non défini'}</span>
                         </div>
+
+                        {/* Affichage contexte socio-économique si renseigné */}
+                        {(profile.academic_level || profile.financial_situation || profile.network_support || profile.religious_values) && (
+                          <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                            <h4 className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">
+                              📊 Contexte socio-économique
+                            </h4>
+                            <div className="space-y-3">
+                              {profile.academic_level && (
+                                <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                                  <span className="text-sm text-slate-600 dark:text-slate-300">Niveau académique</span>
+                                  <span className="text-sm font-semibold text-slate-900 dark:text-white capitalize">
+                                    {profile.academic_level.replace('+', ' +')}
+                                  </span>
+                                </div>
+                              )}
+                              {profile.financial_situation && (
+                                <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                                  <span className="text-sm text-slate-600 dark:text-slate-300">Situation financière</span>
+                                  <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                                    {profile.financial_situation === 'low' ? 'Contraintes élevées' :
+                                     profile.financial_situation === 'medium' ? 'Situation modérée' :
+                                     'À l\'aise'}
+                                  </span>
+                                </div>
+                              )}
+                              {profile.network_support && (
+                                <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                                  <span className="text-sm text-slate-600 dark:text-slate-300">Réseau professionnel</span>
+                                  <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                                    {profile.network_support === 'strong' ? 'Fort' :
+                                     profile.network_support === 'moderate' ? 'Limité' :
+                                     'Faible'}
+                                  </span>
+                                </div>
+                              )}
+                              {profile.religious_values && (
+                                <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                                  <span className="text-sm text-slate-600 dark:text-slate-300">Valeurs religieuses</span>
+                                  <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                                    {profile.religious_values === 'very_important' ? 'Très important' :
+                                     profile.religious_values === 'important' ? 'Important' :
+                                     profile.religious_values === 'neutral' ? 'Neutre' :
+                                     'Pas important'}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </CardContent>
