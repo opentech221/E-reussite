@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useNavigate } from 'react-router-dom';
+import ProfileOrientationSection from '@/components/profile/ProfileOrientationSection';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -493,6 +494,9 @@ const Profile = () => {
                     )}
                   </CardContent>
                 </Card>
+
+                {/* Section Orientation Professionnelle */}
+                <ProfileOrientationSection userId={user.id} />
               </motion.div>
             </div>
           </div>

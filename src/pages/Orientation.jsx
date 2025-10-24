@@ -28,6 +28,7 @@ import {
   getLatestOrientationTest,
   getCareersByIds,
 } from '../services/orientationService';
+import { prefillSocioEconomicQuestions, saveOrientationToProfile } from '../services/profileOrientationService';
 import OrientationTest from '../components/orientation/OrientationTest';
 import ResultsRadarChart from '../components/orientation/ResultsRadarChart';
 import CareerCard from '../components/orientation/CareerCard';
@@ -41,13 +42,25 @@ const Orientation = () => {
   const [selectedCareer, setSelectedCareer] = useState(null);
   const [loading, setLoading] = useState(false);
   const [userLevel, setUserLevel] = useState(null); // BFEM | BAC
+  const [prefilledAnswers, setPrefilledAnswers] = useState({}); // Réponses pré-remplies depuis profil
 
-  // Charger dernier test au montage
+  // Charger dernier test + pré-remplissage au montage
   useEffect(() => {
     if (user) {
       loadLatestTest();
+      loadProfilePrefill();
     }
   }, [user]);
+
+  const loadProfilePrefill = async () => {
+    try {
+      const prefilled = await prefillSocioEconomicQuestions(user.id);
+      console.log('✅ [Orientation] Questions pré-remplies depuis profil:', prefilled);
+      setPrefilledAnswers(prefilled);
+    } catch (error) {
+      console.error('❌ Erreur pré-remplissage:', error);
+    }
+  };
 
   const loadLatestTest = async () => {
     try {
@@ -106,6 +119,19 @@ const Orientation = () => {
         preferences,
         topCareers.map(c => c.id)
       );
+
+      // 🆕 Sauvegarder dans le profil pour intégration
+      await saveOrientationToProfile(
+        user.id,
+        null, // testId sera récupéré automatiquement via trigger
+        topCareers.map(c => ({
+          slug: c.slug,
+          title: c.title,
+          score: c.match_score,
+          category: c.category
+        }))
+      );
+      console.log('✅ [Orientation] Résultats sauvegardés dans profil');
 
       setTestResults({
         scores,
@@ -283,6 +309,7 @@ const Orientation = () => {
         questions={ORIENTATION_QUESTIONS}
         onComplete={handleTestComplete}
         loading={loading}
+        prefilledAnswers={prefilledAnswers} // 🆕 Passer les réponses pré-remplies
       />
     );
   }

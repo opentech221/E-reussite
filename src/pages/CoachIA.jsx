@@ -46,6 +46,7 @@ import AIProviderSelectorCompact from '@/components/AIProviderSelectorCompact';
 import { useMultiProviderAI } from '@/hooks/useMultiProviderAI';
 import AICoachService from '@/lib/aiCoachService';
 import aiConversationService from '@/lib/aiConversationService';
+import { checkProfileCompleteness, getOrientationFromProfile } from '@/services/profileOrientationService';
 import PerplexitySearchMode from '@/components/PerplexitySearchMode';
 import InteractiveQuiz from '@/components/InteractiveQuiz';
 import QuizHistory from '@/components/QuizHistory';
@@ -120,7 +121,7 @@ const CoachIA = () => {
     togglePinConversation
   } = useAIConversation(null, currentContext.page, currentContext);
 
-  // Charger le profil utilisateur
+  // Charger le profil utilisateur + orientation
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return;
@@ -133,6 +134,21 @@ const CoachIA = () => {
 
       if (!error && data) {
         setUserProfile(data);
+        
+        // 🆕 Charger données d'orientation pour enrichir contexte Coach IA
+        try {
+          const orientationData = await getOrientationFromProfile(user.id);
+          if (orientationData) {
+            // Ajouter au profil pour utilisation dans les suggestions IA
+            setUserProfile(prev => ({
+              ...prev,
+              orientation: orientationData
+            }));
+            console.log('✅ [Coach IA] Contexte orientation chargé:', orientationData);
+          }
+        } catch (err) {
+          console.error('❌ Erreur chargement orientation:', err);
+        }
       }
     };
 

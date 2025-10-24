@@ -17,9 +17,9 @@ import {
   ThumbsDown,
 } from 'lucide-react';
 
-const OrientationTest = ({ questions, onComplete, loading }) => {
+const OrientationTest = ({ questions, onComplete, loading, prefilledAnswers = {} }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useState(prefilledAnswers); // 🆕 Initialiser avec pré-remplissage
 
   const currentQuestion = questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
