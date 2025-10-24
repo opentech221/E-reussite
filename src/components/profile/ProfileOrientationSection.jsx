@@ -8,7 +8,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   TrendingUp, 
   Calendar, 
@@ -20,11 +20,13 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getOrientationFromProfile, getPreferredCareersDetails } from '@/services/profileOrientationService';
+import CareerDetailModal from '../orientation/CareerDetailModal';
 
 const ProfileOrientationSection = ({ userId }) => {
   const [loading, setLoading] = useState(true);
   const [orientationData, setOrientationData] = useState(null);
   const [careers, setCareers] = useState([]);
+  const [selectedCareer, setSelectedCareer] = useState(null);
 
   useEffect(() => {
     loadOrientationData();
@@ -48,6 +50,14 @@ const ProfileOrientationSection = ({ userId }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOpenCareer = (career) => {
+    setSelectedCareer(career);
+  };
+
+  const handleCloseCareer = () => {
+    setSelectedCareer(null);
   };
 
   // Si pas encore de test
@@ -199,13 +209,13 @@ const ProfileOrientationSection = ({ userId }) => {
             </div>
 
             {/* Bouton Découvrir */}
-            <Link
-              to={`/orientation?career=${career.slug}`}
+            <button
+              onClick={() => handleOpenCareer(career)}
               className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium rounded-lg transition-all group"
             >
               <span>Découvrir ce métier</span>
               <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            </button>
           </motion.div>
         ))}
       </div>
@@ -217,6 +227,16 @@ const ProfileOrientationSection = ({ userId }) => {
       >
         Voir tous mes résultats →
       </Link>
+
+      {/* Career Detail Modal */}
+      <AnimatePresence>
+        {selectedCareer && (
+          <CareerDetailModal
+            career={selectedCareer}
+            onClose={handleCloseCareer}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
