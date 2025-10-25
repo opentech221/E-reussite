@@ -47,6 +47,8 @@ const Social = lazy(() => import('@/pages/Social'));
 const AdvancedAnalytics = lazy(() => import('@/pages/AdvancedAnalytics'));
 const QuizReview = lazy(() => import('@/pages/QuizReview'));
 const Orientation = lazy(() => import('@/pages/Orientation'));
+const CompetitionsPage = lazy(() => import('@/pages/CompetitionsPage'));
+const CompetitionQuizPage = lazy(() => import('@/pages/CompetitionQuizPage'));
 import AIAssistantSidebar from '@/components/AIAssistantSidebar';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import PWAManager from '@/components/PWAManager';
@@ -109,6 +111,8 @@ function App() {
               <Route path="/analytics" element={<AdvancedAnalytics />} />
               <Route path="/orientation" element={<Orientation />} />
               <Route path="/payment" element={<PaymentPage />} />
+              <Route path="/competitions" element={<CompetitionsPage />} />
+              <Route path="/competitions/:competitionId" element={<CompetitionQuizPage />} />
               <Route path="/test-debug" element={<TestProgressionDebug />} />
             </Route>
           </Route>
