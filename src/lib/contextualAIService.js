@@ -282,12 +282,19 @@ ${message}
 
   /**
    * Construit le contexte des statistiques utilisateur
+   * 🔥 MISE À JOUR: Utilise les données complètes depuis realtimeDataService
    */
   buildUserStatsContext(userContext) {
     if (!userContext || Object.keys(userContext).length === 0) {
       return '- Aucune donnée utilisateur disponible';
     }
 
+    // 🔥 NOUVEAU: Si contextSummary existe, l'utiliser directement
+    if (userContext.contextSummary) {
+      return `\n👤 DONNÉES RÉELLES DE L'UTILISATEUR (EN TEMPS RÉEL):\n\n${userContext.contextSummary}`;
+    }
+
+    // Sinon, utiliser l'ancien format (pour compatibilité)
     let context = '\n👤 DONNÉES RÉELLES DE L\'UTILISATEUR:\n';
     
     if (userContext.userName) context += `- Nom: ${userContext.userName}\n`;
@@ -299,7 +306,7 @@ ${message}
     if (userContext.totalBadges !== undefined) context += `- Badges débloqués: ${userContext.totalBadges}\n`;
     if (userContext.rank !== undefined) context += `- Classement: ${userContext.rank}\n`;
     
-    // ✅ NOUVEAU: Matières avec NOMS RÉELS (pas des IDs)
+    // ✅ Matières avec NOMS RÉELS (pas des IDs)
     if (userContext.matieres && userContext.matieres.length > 0) {
       context += `- Matières étudiées: ${userContext.matieres.join(', ')}\n`;
     }
@@ -310,11 +317,13 @@ ${message}
       context += `- Points forts: ${userContext.strongSubjects.join(', ')}\n`;
     }
     
-    // ✅ NOUVEAU: Badges avec NOMS RÉELS et descriptions
+    // ✅ Badges avec NOMS RÉELS et descriptions
     if (userContext.badgesDetails && userContext.badgesDetails.length > 0) {
       context += `\n🏆 BADGES DÉBLOQUÉS (avec détails):\n`;
       userContext.badgesDetails.slice(0, 5).forEach(badge => {
-        context += `  - ${badge.name} (${badge.type}): ${badge.description || 'Badge de réussite'}\n`;
+        const badgeName = badge.badge_name || badge.name;
+        const badgeDesc = badge.badge_description || badge.description || 'Badge de réussite';
+        context += `  - ${badgeName}: ${badgeDesc}\n`;
       });
       if (userContext.badgesDetails.length > 5) {
         context += `  ... et ${userContext.badgesDetails.length - 5} autres badges\n`;
@@ -323,12 +332,58 @@ ${message}
       context += `- Badges récents: ${userContext.recentBadges.join(', ')}\n`;
     }
     
-    // ✅ NOUVEAU: Chapitres complétés avec TITRES RÉELS
+    // ✅ Chapitres complétés avec TITRES RÉELS
     if (userContext.completedChaptersDetails && userContext.completedChaptersDetails.length > 0) {
       context += `\n📚 CHAPITRES COMPLÉTÉS (avec titres):\n`;
       const chaptersToShow = userContext.completedChaptersDetails.slice(0, 8);
       chaptersToShow.forEach(chapter => {
         context += `  - ${chapter.title} (${chapter.matiere}) - ${chapter.progress}% complété\n`;
+      });
+      if (userContext.completedChaptersDetails.length > 8) {
+        context += `  ... et ${userContext.completedChaptersDetails.length - 8} autres chapitres\n`;
+      }
+    } else if (userContext.completedChapters !== undefined) {
+      context += `- Chapitres complétés: ${userContext.completedChapters}\n`;
+    }
+    
+    // ✅ NOUVEAU: Orientation professionnelle
+    if (userContext.completeData?.orientation?.hasCompletedTest) {
+      const orientation = userContext.completeData.orientation;
+      context += `\n🎓 ORIENTATION PROFESSIONNELLE:\n`;
+      context += `- Test complété: Oui (${new Date(orientation.testDate).toLocaleDateString('fr-FR')})\n`;
+      if (orientation.topCareer) {
+        context += `- Métier principal: ${orientation.topCareer.title} (${orientation.topCareer.compatibility_score}% de compatibilité)\n`;
+      }
+      if (orientation.topCareers.length > 1) {
+        const otherCareers = orientation.topCareers.slice(1, 3).map(c => c.title).join(', ');
+        context += `- Autres métiers compatibles: ${otherCareers}\n`;
+      }
+    }
+    
+    // ✅ NOUVEAU: Plan d'étude
+    if (userContext.completeData?.studyPlan?.hasActivePlan) {
+      const studyPlan = userContext.completeData.studyPlan;
+      context += `\n📅 PLAN D'ÉTUDE:\n`;
+      context += `- Tâches totales: ${studyPlan.totalTasks}\n`;
+      context += `- Tâches complétées: ${studyPlan.completedTasks}\n`;
+      context += `- Tâches pour aujourd'hui: ${studyPlan.todayTasks}\n`;
+      if (studyPlan.overdueTasks > 0) {
+        context += `- ⚠️ Tâches en retard: ${studyPlan.overdueTasks}\n`;
+      }
+    }
+    
+    // ✅ NOUVEAU: Abonnement
+    if (userContext.completeData?.subscription) {
+      const sub = userContext.completeData.subscription;
+      context += `\n💳 ABONNEMENT:\n`;
+      context += `- Statut: ${sub.status === 'active' ? 'Actif' : sub.status === 'trial' ? 'Essai gratuit' : 'Aucun'}\n`;
+      if (sub.isActive || sub.isTrial) {
+        context += `- Jours restants: ${sub.daysRemaining}\n`;
+      }
+    }
+
+    return context;
+  }
       });
       if (userContext.completedChaptersDetails.length > 8) {
         context += `  ... et ${userContext.completedChaptersDetails.length - 8} autres chapitres\n`;
@@ -356,113 +411,308 @@ ${message}
   /**
    * Construit le contexte des fonctionnalités disponibles selon la page
    */
+  /**
+   * 🔥 Construit le contexte des fonctionnalités disponibles sur la plateforme
+   * MISE À JOUR COMPLÈTE: Inclut TOUTES les fonctionnalités avec accès aux données réelles
+   */
   buildPlatformFeaturesContext(page) {
     const allFeatures = {
+      // 📊 Dashboard - Tableau de bord principal
       dashboard: [
-        'Statistiques en temps réel (points, streak, badges)',
-        'Graphiques de progression',
+        'Statistiques en temps réel (points, streak, badges, niveau)',
+        'Graphiques de progression (7 derniers jours)',
         'Section "Prochaines actions prioritaires"',
         'Badges récents et à débloquer',
-        'Accès rapide aux matières (Mathématiques, Physique, Français)',
-        'Liens vers Quiz, Examens, Challenges'
+        'Accès rapide aux matières (Mathématiques, Physique, Français, SVT, Anglais, etc.)',
+        'Liens vers Quiz, Examens, Challenges, Plan d\'étude',
+        'Taux de complétion global des chapitres'
       ],
+      
+      // 📚 Cours et chapitres
       courses: [
-        'Chapitres par matière (Mathématiques, Physique, Français)',
-        'Contenu de cours détaillé',
+        'Chapitres par matière (Mathématiques, Physique, Français, SVT, Anglais, Histoire-Géo, etc.)',
+        'Contenu de cours détaillé avec vidéos et exercices',
         'Quiz de validation après chaque chapitre',
-        'Progression par chapitre',
-        'Difficulté et durée estimée',
-        'Badges à débloquer en complétant'
+        'Progression par chapitre (pourcentage)',
+        'Difficulté et durée estimée pour chaque chapitre',
+        'Badges à débloquer en complétant',
+        'Temps passé sur chaque chapitre (statistiques)',
+        'Navigation par matière et niveau (BFEM/BAC)'
       ],
+      
+      // ❓ Quiz et révisions
       quiz: [
         'Quiz par chapitre et matière',
-        'Questions à choix multiples',
-        'Résultats instantanés',
-        'Correction détaillée',
-        'Points gagnés/perdus',
-        'Historique des tentatives'
+        'Questions à choix multiples avec correction',
+        'Résultats instantanés avec score',
+        'Correction détaillée avec explications',
+        'Points gagnés/perdus selon performance',
+        'Historique des tentatives avec possibilité de recommencer',
+        'Page de révision (/quiz-review) pour revoir les erreurs'
       ],
+      
+      // 📝 Examens blancs
       exams: [
-        'Examens blancs disponibles',
-        'Simulation conditions réelles',
-        'Correction complète',
-        'Statistiques de réussite',
-        'Classement des résultats'
+        'Examens blancs BFEM et BAC disponibles',
+        'Simulation conditions réelles d\'examen',
+        'Correction complète avec justifications',
+        'Statistiques de réussite par matière',
+        'Classement des résultats',
+        'Page résultats (/exam-results) avec historique complet'
       ],
+      
+      // 📈 Progression et statistiques
       progression: [
-        'Graphiques d\'évolution',
-        'Statistiques par matière',
-        'Tableau de bord analytique',
-        'Historique complet',
-        'Identification forces/faiblesses'
+        'Graphiques d\'évolution sur 30 jours',
+        'Statistiques détaillées par matière',
+        'Tableau de bord analytique avec forces/faiblesses',
+        'Historique complet d\'activités',
+        'Identification automatique des matières à renforcer',
+        'Temps total d\'étude par matière'
       ],
+      
+      // 🏆 Badges et récompenses
       badges: [
-        'Badges disponibles: Première Victoire, Série Parfaite, Marathon, Élite, etc.',
-        'Critères de déblocage',
-        'Progression vers chaque badge',
+        'Collection de 14 badges disponibles : Premier Pas, Apprenant Assidu, Maître des Quiz, Champion, Série 7/30/100 jours, Premier A, Perfectionniste, Expert, etc.',
+        'Critères de déblocage clairs pour chaque badge',
+        'Progression vers chaque badge (visible)',
         'Badges rares et exclusifs',
-        'Points bonus pour badges'
+        'Points bonus pour badges débloqués',
+        'Affichage dans le profil et sur le leaderboard'
       ],
+      
+      // 🎯 Défis et challenges
       challenges: [
         'Défis quotidiens/hebdomadaires',
         'Challenges par matière',
         'Récompenses en points',
         'Classement des challengers',
-        'Badges spéciaux'
+        'Badges spéciaux pour défis complétés'
       ],
+      
+      // 🥇 Classement (Leaderboard)
       leaderboard: [
-        'Classement général',
-        'Classement par niveau',
-        'Top performers',
-        'Votre position actuelle',
-        'Points des concurrents'
+        'Classement général (Top 100)',
+        'Classement par niveau scolaire',
+        'Classement par matière',
+        'Classement hebdomadaire',
+        'Votre position actuelle en temps réel',
+        'Points des concurrents',
+        'Badges visibles des top performers'
       ],
+      
+      // 👤 Profil utilisateur
       profile: [
-        'Statistiques personnelles complètes',
-        'Historique d\'activité',
-        'Badges obtenus',
-        'Niveau et progression',
-        'Streak et points totaux'
+        'Statistiques personnelles complètes (points, niveau, streak, badges)',
+        'Section Orientation Professionnelle (résultats du test avec top 3 métiers)',
+        'Bouton "Découvrir ce métier" pour voir détails dans une modale',
+        'Graphique de progression sur 30 jours',
+        'Badges obtenus avec collection complète',
+        'Section Abonnement avec statut (actif/trial/expiré)',
+        'Bouton "Gérer mon abonnement" pour accéder au paiement',
+        'Contexte socio-économique (situation financière, réseau de soutien, valeurs religieuses, niveau académique)',
+        'Bouton "Modifier le profil" pour éditer les informations',
+        'Timeline d\'activités récentes'
       ],
+      
+      // 📜 Historique d'activités
       historique: [
-        'Vue complète de toutes les activités (chapitres, quiz, examens, badges)',
+        'Vue complète de TOUTES les activités (chapitres, quiz, examens, badges)',
         'Statistiques par type d\'activité (Total, Chapitres, Quiz, Examens)',
         'Barre de recherche pour filtrer les activités',
-        'Filtres par type: Tout, Chapitres, Quiz, Examens, Badges',
+        'Filtres par type : Tout, Chapitres, Quiz, Examens, Badges',
         'Cartes détaillées avec score, temps passé, date',
-        'Bouton "Conseils" sur chaque activité pour analyse IA personnalisée',
+        'Bouton "Conseils IA" sur chaque activité pour analyse personnalisée',
         'Modal avec points forts, points faibles et suggestions',
         'Bouton "Recommencer" pour refaire n\'importe quelle activité',
         'Ordre chronologique (plus récentes en premier)',
         'Code couleur des scores (vert ≥70%, jaune 50-69%, rouge <50%)'
       ],
       activity_history: [ // Alias
-        'Vue complète de toutes les activités (chapitres, quiz, examens, badges)',
-        'Statistiques par type d\'activité (Total, Chapitres, Quiz, Examens)',
-        'Barre de recherche pour filtrer les activités',
-        'Filtres par type: Tout, Chapitres, Quiz, Examens, Badges',
-        'Cartes détaillées avec score, temps passé, date',
-        'Bouton "Conseils" sur chaque activité pour analyse IA personnalisée',
-        'Modal avec points forts, points faibles et suggestions',
-        'Bouton "Recommencer" pour refaire n\'importe quelle activité',
-        'Ordre chronologique (plus récentes en premier)',
-        'Code couleur des scores (vert ≥70%, jaune 50-69%, rouge <50%)'
+        'Vue complète de TOUTES les activités (chapitres, quiz, examens, badges)',
+        'Statistiques par type d\'activité',
+        'Filtres et recherche avancée',
+        'Analyse IA pour chaque activité',
+        'Boutons d\'action (Recommencer, Conseils)'
+      ],
+      
+      // 🎓 Orientation Professionnelle
+      orientation: [
+        'Test d\'orientation professionnelle complet (17 questions)',
+        '30 métiers détaillés avec descriptions complètes',
+        'Score de compatibilité personnalisé pour chaque métier',
+        'Pré-remplissage automatique des questions depuis le profil (Q13-Q17)',
+        'Intégration avec le profil (résultats sauvegardés automatiquement)',
+        'Affichage des top 3 métiers dans le profil',
+        'Modal détaillée pour chaque métier avec formation requise, salaire, débouchés',
+        'Bouton "Découvrir ce métier" dans le profil'
+      ],
+      
+      // 📅 Plan d'étude
+      'study-plan': [
+        'Planification personnalisée des révisions',
+        'Création de tâches d\'étude avec échéances',
+        'Suivi des objectifs quotidiens/hebdomadaires',
+        'Notifications pour tâches à venir',
+        'Statistiques de complétion',
+        'Suggestions de tâches basées sur les matières faibles',
+        'Calendrier visuel des révisions'
+      ],
+      studyplan: [ // Alias
+        'Planification des révisions',
+        'Tâches avec échéances',
+        'Suivi des objectifs',
+        'Statistiques de complétion'
+      ],
+      
+      // 📊 Analytiques avancées
+      analytics: [
+        'Tableaux de bord détaillés par matière',
+        'Graphiques de progression avancés',
+        'Analyse des forces et faiblesses (données réelles)',
+        'Tendance d\'évolution (croissance/stable/déclin)',
+        'Temps d\'étude par matière (statistiques complètes)',
+        'Activité des 7 derniers jours',
+        'Recommandations basées sur les données'
+      ],
+      
+      // 🌐 Réseau Social
+      social: [
+        'Partage d\'activités avec d\'autres étudiants',
+        'Système d\'amis et de suiveurs',
+        'Publications et interactions sociales',
+        'Likes et commentaires',
+        'Fil d\'actualité des amis',
+        'Profils publics des étudiants'
+      ],
+      
+      // 🔗 Mes Liens Partagés
+      'my-shared-links': [
+        'Gestion de vos liens de partage',
+        'Génération de liens personnalisés (avec Dub.co)',
+        'Statistiques de clics sur vos liens',
+        'Conversions et tracking',
+        'Liens actifs/inactifs',
+        'QR codes pour vos liens'
+      ],
+      mysharedlinks: [ // Alias
+        'Gestion des liens partagés',
+        'Statistiques de clics',
+        'Conversions tracking'
+      ],
+      
+      // ⚙️ Paramètres
+      settings: [
+        'Configuration du compte',
+        'Préférences de notification',
+        'Choix du mode sombre/clair',
+        'Gestion de la confidentialité',
+        'Paramètres de langue',
+        'Notifications push (activation/désactivation)'
+      ],
+      
+      // 💬 Coach IA (cette page actuelle!)
+      'coach-ia': [
+        'Conversation intelligente avec accès à TOUTES vos données en temps réel',
+        '3 onglets : Conversations, Analyses & Conseils, Recherche Perplexity',
+        '4 fournisseurs IA : Gemini 1.5 Flash (gratuit), Gemini Pro, Claude 3.5 Sonnet, Perplexity',
+        'Analyse d\'images avec Vision API (pour aider avec photos d\'exercices)',
+        'Historique des conversations sauvegardé',
+        'Conseils personnalisés basés sur vos forces/faiblesses',
+        'Plan d\'étude généré automatiquement',
+        'Recherche web éducative en temps réel (Perplexity)',
+        'Contexte complet : profil, progression, orientation, badges, plan d\'étude, etc.'
+      ],
+      coachia: [ // Alias
+        'Assistant IA avec accès complet aux données',
+        'Multi-provider (Gemini, Claude, Perplexity)',
+        'Analyse d\'images',
+        'Recherche web éducative'
+      ],
+      
+      // 🤖 Chatbot (page séparée)
+      chatbot: [
+        'Assistant conversationnel simple',
+        'Réponses rapides aux questions courantes',
+        'Aide à la navigation',
+        'Suggestions de contenu'
+      ],
+      
+      // 💳 Paiement et abonnement
+      payment: [
+        'Essai gratuit de 7 jours pour nouveaux inscrits',
+        'Abonnement unique : 1000 FCFA pour accès ILLIMITÉ à vie',
+        'Paiement Mobile Money : Orange Money, Wave, Free Money, MTN Money',
+        'Historique des transactions',
+        'Gestion de l\'abonnement (annulation, renouvellement)',
+        'Statut visible : Trial (essai), Active (actif), Expired (expiré)'
+      ],
+      
+      // 🛒 Boutique (Shop)
+      shop: [
+        'Produits éducatifs disponibles',
+        'Livres et ressources pédagogiques',
+        'Accessoires d\'étude',
+        'Ajout au panier',
+        'Paiement sécurisé'
+      ],
+      
+      // 🛒 Panier (Cart)
+      cart: [
+        'Gestion du panier d\'achat',
+        'Modification des quantités',
+        'Calcul du total',
+        'Passage à la commande',
+        'Sauvegarde du panier'
+      ],
+      
+      // ❓ FAQ et Support
+      faq: [
+        'Questions fréquemment posées',
+        'Réponses détaillées par catégorie',
+        'Guide d\'utilisation',
+        'Résolution de problèmes courants'
+      ],
+      help: [
+        'Centre d\'aide complet',
+        'Tutoriels vidéo',
+        'Guides pas à pas',
+        'Contact support',
+        'Formulaire de feedback'
       ]
     };
 
-    const pageKey = page.toLowerCase();
-    const features = allFeatures[pageKey] || [];
+    const pageKey = page.toLowerCase().replace(/[-\s]/g, ''); // Normaliser les clés
+    let features = allFeatures[pageKey] || allFeatures[page.toLowerCase()] || [];
     
     if (features.length === 0) {
-      return '\n🔧 FONCTIONNALITÉS DISPONIBLES: (utilise les fonctionnalités générales de la plateforme)';
+      // Retourner un aperçu général de toutes les fonctionnalités
+      return `\n🔧 MODULES DISPONIBLES SUR E-RÉUSSITE:
+
+📊 **Contenu pédagogique**: Cours, Chapitres, Quiz, Examens blancs
+🏆 **Gamification**: Points, Niveaux, Badges (14 badges), Défis, Série quotidienne
+📈 **Suivi**: Dashboard, Progression, Analytiques avancées, Historique d'activités
+🎓 **Orientation**: Test professionnel (30 métiers), Résultats dans le profil
+📅 **Organisation**: Plan d'étude personnalisé avec tâches et échéances
+👤 **Profil**: Stats complètes, Badges, Orientation, Abonnement
+🥇 **Compétition**: Leaderboard (global, par niveau, par matière, hebdomadaire)
+💬 **IA**: Coach IA (moi!), Chatbot, Analyse d'images, Recherche Perplexity
+🌐 **Social**: Amis, Suiveurs, Publications, Interactions
+🔗 **Partage**: Liens personnalisés avec statistiques (Dub.co)
+⚙️ **Paramètres**: Notifications, Dark mode, Confidentialité
+💳 **Abonnement**: Essai gratuit 7 jours, puis 1000 FCFA à vie (Mobile Money)
+🛒 **Boutique**: Produits éducatifs, Panier, Paiement sécurisé
+❓ **Support**: FAQ, Centre d'aide, Tutoriels, Contact
+
+⚠️ IMPORTANT: Suggère UNIQUEMENT ces fonctionnalités existantes. Si l'étudiant demande autre chose, signale honnêtement que ça n'existe pas encore.`;
     }
 
-    let context = '\n🔧 FONCTIONNALITÉS DISPONIBLES SUR CETTE PAGE:\n';
+    let context = `\n🔧 FONCTIONNALITÉS DISPONIBLES SUR "${page}":\n`;
     features.forEach(feature => {
       context += `  ✅ ${feature}\n`;
     });
 
-    context += '\n⚠️ IMPORTANT: Suggère UNIQUEMENT ces fonctionnalités existantes. Si l\'étudiant demande autre chose, signale que ça n\'existe pas encore.\n';
+    context += '\n⚠️ IMPORTANT: Suggère UNIQUEMENT ces fonctionnalités existantes. Si l\'étudiant demande autre chose, signale honnêtement que ça n\'existe pas encore.\n';
 
     return context;
   }

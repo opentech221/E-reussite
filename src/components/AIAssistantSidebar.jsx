@@ -46,6 +46,9 @@ import AIProviderSelectorCompact from '@/components/AIProviderSelectorCompact';
 // 🎯 PERPLEXITY - Mode recherche avancée
 import PerplexitySearchMode from '@/components/PerplexitySearchMode';
 
+// 🔥 SERVICE DE DONNÉES EN TEMPS RÉEL
+import realtimeDataService from '@/lib/realtimeDataService';
+
 const AIAssistantSidebar = () => {
   const { user, userProfile } = useAuth();
   const location = useLocation();
@@ -132,8 +135,12 @@ const AIAssistantSidebar = () => {
   /**
    * Récupère les données réelles de l'utilisateur depuis Supabase
    */
+  /**
+   * � Récupère TOUTES les données utilisateur en temps réel
+   * Utilise le nouveau service centralisé realtimeDataService
+   */
   const fetchUserRealData = async () => {
-    console.log('📊 [fetchUserRealData] Début récupération données', { userId: user?.id });
+    console.log('📊 [fetchUserRealData] Récupération données complètes via realtimeDataService', { userId: user?.id });
     
     if (!user) {
       console.warn('⚠️ [fetchUserRealData] Pas d\'utilisateur connecté');
@@ -141,162 +148,48 @@ const AIAssistantSidebar = () => {
     }
 
     try {
-      // 0. Récupérer les VRAIS points depuis user_points (pas profiles.points)
-      console.log('🔍 [fetchUserRealData] Requête user_points...');
-      const { data: userPointsData, error: pointsError } = await supabase
-        .from('user_points')
-        .select('total_points, level, current_streak, longest_streak, quizzes_completed, lessons_completed, total_time_spent')
-        .eq('user_id', user.id)
-        .single();
-
-      if (pointsError) {
-        console.warn('⚠️ [fetchUserRealData] Erreur user_points:', pointsError);
-      } else {
-        console.log('✅ [fetchUserRealData] user_points:', userPointsData);
-      }
-
-      console.log('🔍 [fetchUserRealData] Requête user_progress...');
-      // 1. Stats de progression
-      const { data: progressData, error: progressError } = await supabase
-        .from('user_progress')
-        .select('*')
-        .eq('user_id', user.id);
-
-      if (progressError) {
-        console.error('❌ [fetchUserRealData] Erreur user_progress:', progressError);
-      } else {
-        console.log('✅ [fetchUserRealData] user_progress:', progressData?.length || 0, 'lignes');
-      }
-
-      console.log('🔍 [fetchUserRealData] Requête user_badges...');
-      // 2. Badges débloqués - JOIN avec table badges via badge_id (FK)
-      const { data: rawBadgesData, error: badgesError } = await supabase
-        .from('user_badges')
-        .select(`
-          id,
-          earned_at,
-          badge_id,
-          badges!inner (
-            badge_id,
-            name,
-            icon_name,
-            description
-          )
-        `)
-        .eq('user_id', user.id)
-        .order('earned_at', { ascending: false });
-
-      // Transformer pour compatibilité avec le reste du code
-      const badgesData = rawBadgesData?.map(b => ({
-        badge_id: b.badge_id,
-        badge_name: b.badges.name, // Pour compatibilité
-        badge_icon: b.badges.icon_name,
-        badge_description: b.badges.description,
-        earned_at: b.earned_at
-      })) || [];
-
-      if (badgesError) {
-        console.error('❌ [fetchUserRealData] Erreur user_badges:', badgesError);
-      } else {
-        console.log('✅ [fetchUserRealData] user_badges:', badgesData?.length || 0, 'badges');
-        console.log('🏆 [fetchUserRealData] Badges débloqués:', badgesData?.map(b => b.badge_name).join(', '));
-      }
-
-      // ⚠️ IMPORTANT: quiz_results table does NOT exist in this database
-      console.log('⚠️ [fetchUserRealData] Table quiz_results n\'existe pas - skip');
-      const quizzesData = []; // Pas de système de quiz dans cette BDD
-      const quizzesError = null;
-
-      console.log('🔍 [fetchUserRealData] Requête chapitres complétés...');
-      // 4. Chapitres complétés (via user_progress où completed = true)
-      // JOIN avec chapitres pour récupérer les noms réels
-      const { data: completedChapitres, error: chaptersError } = await supabase
-        .from('user_progress')
-        .select(`
-          chapitre_id,
-          completed,
-          progress_percentage,
-          time_spent,
-          chapitres (
-            id,
-            title,
-            matiere_id,
-            matieres (
-              id,
-              name
-            )
-          )
-        `)
-        .eq('user_id', user.id)
-        .eq('completed', true);
-
-      if (chaptersError) {
-        console.error('❌ [fetchUserRealData] Erreur chapitres complétés:', chaptersError);
-      } else {
-        console.log('✅ [fetchUserRealData] chapitres complétés:', completedChapitres?.length || 0, 'chapitres');
-        // Log les noms des chapitres complétés
-        const chaptersNames = completedChapitres?.map(c => c.chapitres?.title || `Chapitre ${c.chapitre_id}`);
-        console.log('📚 [fetchUserRealData] Chapitres:', chaptersNames?.slice(0, 5).join(', ') + (chaptersNames?.length > 5 ? '...' : ''));
-      }
-
-      // ⚠️ Pas de quiz dans cette BDD - skip analyse scores
-      console.log('📊 [fetchUserRealData] Calcul des statistiques (sans quiz)...');
+      // Récupérer TOUTES les données via le service centralisé
+      const completeData = await realtimeDataService.getUserCompleteData(user.id);
       
-      const totalQuizzes = 0; // Pas de système de quiz
-      const averageScore = 0;
-      const strongSubjects = [];
-      const weakSubjects = [];
+      // Générer le résumé contextuel pour le prompt IA
+      const contextSummary = realtimeDataService.generateContextSummary(completeData);
+      
+      console.log('✅ [fetchUserRealData] Données complètes récupérées:', {
+        badges: completeData.gamification.totalBadges,
+        chapters: completeData.progress.completedChapters,
+        orientation: completeData.orientation.hasCompletedTest,
+        studyPlan: completeData.studyPlan.totalTasks,
+        subscription: completeData.subscription.status
+      });
 
-      // Extraire matières uniques avec noms réels
-      const matieres = [...new Set(
-        completedChapitres
-          ?.map(c => c.chapitres?.matieres?.name)
-          .filter(Boolean) || []
-      )];
-
-      // Extraire chapitres avec titres réels
-      const chaptersWithNames = completedChapitres?.map(c => ({
-        id: c.chapitre_id,
-        title: c.chapitres?.title || `Chapitre ${c.chapitre_id}`,
-        matiere: c.chapitres?.matieres?.name || 'Matière inconnue',
-        progress: c.progress_percentage,
-        timeSpent: c.time_spent
-      })) || [];
-
-      // Badges avec descriptions
-      const badgesWithDetails = badgesData?.map(b => ({
-        name: b.badge_name,
-        description: b.badge_description,
-        icon: b.badge_icon,
-        type: b.badge_type,
-        earnedAt: b.earned_at
-      })) || [];
-
-      const userData = {
-        userName: userProfile?.full_name || user.email?.split('@')[0] || 'Étudiant',
-        level: userPointsData?.level || userProfile?.level || 1, // ✅ Prioriser user_points
-        totalPoints: userPointsData?.total_points || 0, // ✅ Vrais points depuis user_points
-        currentStreak: userPointsData?.current_streak || 0, // ✅ Vrai streak depuis user_points
-        maxStreak: userPointsData?.longest_streak || 0, // ✅ Vrai longest_streak depuis user_points
-        completionRate: Math.round((completedChapitres?.length || 0) / 30 * 100), // Estimation
-        totalBadges: badgesData?.length || 0,
-        rank: userProfile?.rank || null,
-        matieres, // Noms des matières (ex: "Mathématiques", "Français")
-        weakSubjects,
-        strongSubjects,
-        lastActivity: progressData?.[0]?.updated_at ? new Date(progressData[0].updated_at).toLocaleDateString('fr-FR') : 'Aujourd\'hui',
-        recentBadges: badgesWithDetails.slice(0, 3).map(b => b.name), // Noms des badges
-        badgesDetails: badgesWithDetails, // Détails complets des badges
-        completedChapters: completedChapitres?.length || 0,
-        completedChaptersDetails: chaptersWithNames, // Détails complets des chapitres
-        totalQuizzes,
-        averageScore
+      // Retourner au format compatible avec l'ancien code
+      return {
+        // Format ancien (pour compatibilité)
+        userName: completeData.profile.full_name || user.email?.split('@')[0] || 'Étudiant',
+        level: completeData.gamification.level,
+        totalPoints: completeData.gamification.points,
+        currentStreak: completeData.gamification.currentStreak,
+        maxStreak: completeData.gamification.longestStreak,
+        completionRate: completeData.progress.completionRate,
+        totalBadges: completeData.gamification.totalBadges,
+        rank: completeData.profile.rank,
+        matieres: Object.keys(completeData.progress.bySubject),
+        weakSubjects: completeData.analytics.weakSubjects,
+        strongSubjects: completeData.analytics.strongSubjects,
+        lastActivity: completeData.gamification.lastActivityDate || 'Aujourd\'hui',
+        recentBadges: completeData.gamification.badges.slice(0, 3).map(b => b.badge_name),
+        badgesDetails: completeData.gamification.badges,
+        completedChapters: completeData.progress.completedChapters,
+        completedChaptersDetails: [], // Pas besoin de détails ici
+        totalQuizzes: 0,
+        averageScore: 0,
+        
+        // 🔥 NOUVELLES DONNÉES COMPLÈTES
+        completeData, // Toutes les données structurées
+        contextSummary // Résumé formaté pour le prompt IA
       };
-
-      console.log('✅ [fetchUserRealData] Données utilisateur compilées:', userData);
-      return userData;
     } catch (error) {
-      console.error('❌ Erreur récupération données utilisateur:', error);
+      console.error('❌ [fetchUserRealData] Erreur récupération données:', error);
       return {
         userName: userProfile?.full_name || 'Étudiant',
         level: userProfile?.level || 1,
@@ -346,6 +239,36 @@ const AIAssistantSidebar = () => {
     } else if (path.includes('/leaderboard')) {
       page = 'Classement';
       section = 'ranking';
+    } else if (path.includes('/analytics')) {
+      page = 'Analytiques';
+      section = 'analytics-view';
+    } else if (path.includes('/coach-ia')) {
+      page = 'Coach IA';
+      section = 'ai-assistant';
+    } else if (path.includes('/chatbot')) {
+      page = 'Chatbot';
+      section = 'chatbot';
+    } else if (path.includes('/quiz-review')) {
+      page = 'Quiz - Révision';
+      section = 'quiz-review';
+    } else if (path.includes('/orientation')) {
+      page = 'Orientation Professionnelle';
+      section = 'career-guidance';
+    } else if (path.includes('/settings')) {
+      page = 'Paramètres';
+      section = 'user-settings';
+    } else if (path.includes('/my-shared-links')) {
+      page = 'Mes Liens Partagés';
+      section = 'shared-links';
+    } else if (path.includes('/social')) {
+      page = 'Réseau Social';
+      section = 'social-feed';
+    } else if (path.includes('/payment')) {
+      page = 'Paiement';
+      section = 'subscription';
+    } else if (path.includes('/test-debug')) {
+      page = 'Test Debug';
+      section = 'debug';
     } else if (path.includes('/profile')) {
       page = 'Profil';
       section = 'settings';
