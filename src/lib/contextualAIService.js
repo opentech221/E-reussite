@@ -1325,4 +1325,25 @@ export const generateAdviceForActivity = async (activity, userProfile) => {
   return await ai.generateAdviceForActivity(activity, userProfile);
 };
 
+/**
+ * Fonction helper pour construire un prompt contextuel enrichi
+ * @param {string} page - Page actuelle
+ * @param {object} userContext - Contexte utilisateur (stats, progression, etc.)
+ * @param {object} additionalContext - Contexte additionnel optionnel
+ * @returns {string} Prompt système enrichi
+ */
+export const buildContextualPrompt = (page = 'Dashboard', userContext = {}, additionalContext = {}) => {
+  const ai = getContextualAI();
+  if (!ai) {
+    console.warn('⚠️ [buildContextualPrompt] Service IA non initialisé. Utilisation prompt par défaut.');
+    return `Tu es un assistant IA intelligent pour la plateforme E-Réussite. Page actuelle: ${page}`;
+  }
+  
+  // Construire section depuis additionalContext si présente
+  const section = additionalContext.section || 'general';
+  
+  // Appeler la méthode de l'instance (sans le paramètre message car on génère juste le prompt système)
+  return ai.buildContextualPrompt('', page, section, userContext, JSON.stringify(additionalContext));
+};
+
 export default ContextualAIService;

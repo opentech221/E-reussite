@@ -11,7 +11,8 @@ import { useAuth } from '../contexts/SupabaseAuthContext';
 import aiConversationService from '../lib/aiConversationService';
 import aiStorageService from '../lib/aiStorageService';
 import { useMultiProviderAI } from './useMultiProviderAI';
-import { buildSystemPrompt, buildImageAnalysisPrompt, buildConversationPrompt } from '../lib/aiPromptBuilder';
+import { buildSystemPrompt, buildImageAnalysisPrompt } from '../lib/aiPromptBuilder';
+import { buildContextualPrompt } from '../lib/contextualAIService';
 
 /**
  * Hook de gestion des conversations IA
@@ -300,22 +301,26 @@ export function useAIConversation(conversationId = null, contextPage = null, con
       // 🤖 GÉNÉRATION RÉPONSE IA AVEC CONTEXTE ENRICHI
       console.log(`🤖 [useAIConversation] Génération réponse avec ${currentProvider}...`);
       
-      // Construire prompt système enrichi avec contexte utilisateur
+      // Construire prompt système enrichi avec contextualAIService
       const conversationMetadata = currentConversation?.context_data || {};
-      const systemPrompt = buildConversationPrompt(
-        {
-          ...conversationMetadata,
-          page: pageContext.page || conversationMetadata.page,
-          section: pageContext.section || conversationMetadata.section
-        },
-        userContext
+      const currentPageContext = {
+        page: pageContext?.page || conversationMetadata.page || 'Dashboard',
+        section: pageContext?.section || conversationMetadata.section || 'general'
+      };
+      
+      // 🎯 UTILISER contextualAIService AVEC TOUTES LES FONCTIONNALITÉS
+      const systemPrompt = buildContextualPrompt(
+        currentPageContext.page,
+        userContext,
+        conversationMetadata
       );
       
-      console.log('📝 [useAIConversation] Prompt système enrichi avec:', {
+      console.log('📝 [useAIConversation] Prompt système enrichi avec contextualAIService:', {
         userName: userContext.userName,
         level: userContext.level,
         totalPoints: userContext.totalPoints,
-        page: pageContext.page
+        page: currentPageContext.page,
+        promptLength: systemPrompt.length
       });
       
       // Construire historique pour contexte
