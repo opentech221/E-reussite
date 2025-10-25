@@ -290,7 +290,7 @@ class RealtimeDataService {
   async getOrientationData(userId) {
     try {
       const { data, error } = await supabase
-        .from('user_orientation_results')
+        .from('orientation_tests')
         .select('*')
         .eq('user_id', userId)
         .order('completed_at', { ascending: false })
@@ -332,7 +332,7 @@ class RealtimeDataService {
         .select('*')
         .eq('user_id', userId);
 
-      if (error) throw error;
+      if (error && error.code !== 'PGRST204') throw error; // PGRST204 = table not found
 
       const tasks = data || [];
       const now = new Date();
@@ -347,7 +347,7 @@ class RealtimeDataService {
         todayTasks: tasks.filter(t => !t.completed && t.due_date?.split('T')[0] === today).length
       };
     } catch (error) {
-      console.error('❌ [RealtimeData] Erreur plan d\'étude:', error);
+      console.error('⚠️ [RealtimeData] Plan d\'étude non disponible:', error.message);
       return {
         hasActive: false,
         totalTasks: 0,
@@ -507,7 +507,7 @@ class RealtimeDataService {
   async getSubscriptionData(userId) {
     try {
       const { data, error } = await supabase
-        .from('subscriptions')
+        .from('user_subscriptions')
         .select('*')
         .eq('user_id', userId)
         .single();
@@ -559,7 +559,7 @@ class RealtimeDataService {
   async getActivityHistory(userId) {
     try {
       const { data, error } = await supabase
-        .from('activity_history')
+        .from('activity_logs')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
@@ -568,7 +568,7 @@ class RealtimeDataService {
       if (error) throw error;
       return data || [];
     } catch (error) {
-      console.error('❌ [RealtimeData] Erreur historique:', error);
+      console.error('⚠️ [RealtimeData] Historique non disponible:', error.message);
       return [];
     }
   }
