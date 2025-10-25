@@ -93,6 +93,14 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       badgeColor: 'bg-gradient-to-r from-yellow-500 to-orange-500'
     },
     { 
+      path: '/competitions', 
+      icon: Trophy, 
+      label: 'Compétitions',
+      description: 'Classements en direct',
+      badge: 'LIVE',
+      badgeColor: 'bg-gradient-to-r from-red-500 to-orange-500'
+    },
+    { 
       path: '/orientation', 
       icon: Compass, 
       label: 'Orientation',
