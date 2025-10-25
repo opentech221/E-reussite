@@ -384,33 +384,7 @@ ${message}
 
     return context;
   }
-      });
-      if (userContext.completedChaptersDetails.length > 8) {
-        context += `  ... et ${userContext.completedChaptersDetails.length - 8} autres chapitres\n`;
-      }
-    } else if (userContext.completedChapters !== undefined) {
-      context += `- Chapitres complétés: ${userContext.completedChapters}\n`;
-    }
-    
-    // Activité récente
-    if (userContext.lastActivity) {
-      context += `\n- Dernière activité: ${userContext.lastActivity}\n`;
-    }
-    if (userContext.totalQuizzes !== undefined) {
-      context += `- Quiz passés: ${userContext.totalQuizzes}\n`;
-    }
-    if (userContext.averageScore !== undefined) {
-      context += `- Score moyen: ${userContext.averageScore}%\n`;
-    }
 
-    context += `\n⚠️ IMPORTANT: Utilise ces NOMS RÉELS (ex: "Mathématiques", "Physique") et TITRES DE CHAPITRES dans tes réponses, PAS les IDs numériques !`;
-
-    return context;
-  }
-
-  /**
-   * Construit le contexte des fonctionnalités disponibles selon la page
-   */
   /**
    * 🔥 Construit le contexte des fonctionnalités disponibles sur la plateforme
    * MISE À JOUR COMPLÈTE: Inclut TOUTES les fonctionnalités avec accès aux données réelles
