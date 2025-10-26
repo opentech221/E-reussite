@@ -170,4 +170,4 @@ ALTER PUBLICATION supabase_realtime ADD TABLE competition_leaderboards;
 COMMENT ON POLICY "Competitions visibles par tous" ON competitions IS 'Toutes les compétitions ouvertes sont publiques';
 COMMENT ON POLICY "Participants visibles par tous" ON competition_participants IS 'Leaderboard public pour engagement communautaire';
 COMMENT ON POLICY "Questions visibles par les participants" ON competition_questions IS 'Accès aux questions uniquement si inscrit';
-COMMENT ON POLICY "Réponses visibles uniquement par l''auteur" ON competition_answers IS 'Confidentialité des réponses pendant la compétition';
+COMMENT ON POLICY "Réponses visibles uniquement par l'auteur" ON competition_answers IS 'Confidentialité des réponses pendant la compétition';
