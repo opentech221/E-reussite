@@ -353,7 +353,7 @@ CREATE OR REPLACE FUNCTION get_competition_leaderboard(
 )
 RETURNS TABLE (
     user_id UUID,
-    username VARCHAR,
+    full_name VARCHAR,
     avatar_url TEXT,
     rank INTEGER,
     score INTEGER,
@@ -370,7 +370,7 @@ BEGIN
         RETURN QUERY
         SELECT 
             cp.user_id,
-            p.username,
+            p.full_name,
             p.avatar_url,
             cp.rank,
             cp.score,
@@ -388,7 +388,7 @@ BEGIN
         RETURN QUERY
         SELECT 
             cl.user_id,
-            p.username,
+            p.full_name,
             p.avatar_url,
             cl.regional_rank as rank,
             cl.score,
@@ -410,7 +410,7 @@ BEGIN
         RETURN QUERY
         SELECT 
             cl.user_id,
-            p.username,
+            p.full_name,
             p.avatar_url,
             cl.national_rank as rank,
             cl.score,

@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useCompetitions } from '../hooks/useCompetitions';
+import { useCompetitions } from '@/hooks/useCompetitions';
 import { 
   Clock, 
   Target, 
@@ -49,6 +49,21 @@ const CompetitionQuizPage = () => {
       loadQuestions(competitionId);
     }
   }, [competitionId, loadQuestions]);
+
+  // Transformer les questions pour le format attendu
+  const transformedQuestions = questions?.map(q => ({
+    ...q,
+    question: {
+      ...q.question,
+      answers: [
+        q.question.option_a,
+        q.question.option_b,
+        q.question.option_c,
+        q.question.option_d
+      ].filter(Boolean), // Filtrer les options vides
+      correct_answer: ['A', 'B', 'C', 'D'].indexOf(q.question.correct_option)
+    }
+  })) || [];
 
   // Inscription automatique si pas encore inscrit
   useEffect(() => {
@@ -284,7 +299,7 @@ const CompetitionQuizPage = () => {
         {/* Question */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
-            {currentQuestion.question.question}
+            {currentQuestion.question.question_text}
           </h2>
 
           {/* Réponses */}
