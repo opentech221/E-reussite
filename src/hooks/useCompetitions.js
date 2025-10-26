@@ -5,8 +5,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { competitionService } from '../lib/competitionService';
-import { useAuth } from './useAuth';
+import { competitionService } from '@/lib/competitionService';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 
 export const useCompetitions = (competitionId = null) => {
   const { user } = useAuth();

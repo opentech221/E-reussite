@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useCompetitions } from '../hooks/useCompetitions';
+import { useCompetitions } from '@/hooks/useCompetitions';
 import { 
   Trophy, 
   TrendingUp, 
