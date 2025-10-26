@@ -4,7 +4,7 @@
  * MVP Phase 1 - Compétitions asynchrones avec leaderboards
  */
 
-import { supabase } from './supabaseClient';
+import { supabase } from './customSupabaseClient';
 
 class CompetitionService {
   /**

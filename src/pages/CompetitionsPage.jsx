@@ -5,9 +5,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCompetitions } from '../hooks/useCompetitions';
-import CompetitionCard from '../components/CompetitionCard';
-import LiveLeaderboard from '../components/LiveLeaderboard';
+import { useCompetitions } from '@/hooks/useCompetitions';
+import CompetitionCard from '@/components/CompetitionCard';
+import LiveLeaderboard from '@/components/LiveLeaderboard';
 import { 
   Trophy, 
   TrendingUp, 

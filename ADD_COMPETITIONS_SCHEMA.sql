@@ -3,6 +3,37 @@
 -- Compétitions asynchrones + Leaderboards
 -- =============================================
 
+-- Table des questions génériques pour compétitions
+-- (Peut être alimentée depuis quiz_questions ou interactive_quiz_questions)
+CREATE TABLE IF NOT EXISTS questions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    question_text TEXT NOT NULL,
+    
+    -- Type de question
+    question_type VARCHAR(20) DEFAULT 'qcm' CHECK (question_type IN ('qcm', 'vrai_faux', 'texte_libre')),
+    
+    -- Options (pour QCM)
+    option_a TEXT,
+    option_b TEXT,
+    option_c TEXT,
+    option_d TEXT,
+    correct_option CHAR(1) CHECK (correct_option IN ('A', 'B', 'C', 'D')), -- 'A', 'B', 'C', 'D'
+    
+    -- Métadonnées
+    subject VARCHAR(100), -- 'mathematiques', 'sciences', etc.
+    difficulty VARCHAR(20) DEFAULT 'moyen' CHECK (difficulty IN ('facile', 'moyen', 'difficile')),
+    
+    -- Traçabilité
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_questions_subject ON questions(subject);
+CREATE INDEX IF NOT EXISTS idx_questions_difficulty ON questions(difficulty);
+
+COMMENT ON TABLE questions IS 'Questions génériques utilisées pour les compétitions';
+COMMENT ON COLUMN questions.correct_option IS 'Réponse correcte : A, B, C ou D';
+
 -- Table principale des compétitions
 CREATE TABLE IF NOT EXISTS competitions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
