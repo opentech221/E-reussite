@@ -76,6 +76,8 @@ export const useCompetitions = (competitionId = null) => {
     
     const { data, error: err } = await competitionService.joinCompetition(id, user.id);
     
+    console.log('🔍 [useCompetitions] Réponse joinCompetition:', { data, error: err });
+    
     if (err) {
       setError(err.message);
       console.error('❌ [useCompetitions] Erreur inscription:', err);
@@ -83,8 +85,13 @@ export const useCompetitions = (competitionId = null) => {
       return { success: false };
     }
     
-    // Recharger les données du participant
-    await loadParticipantData(id);
+    // Recharger les données du participant avec le bon ID
+    if (data?.participant_id) {
+      console.log('🔄 [useCompetitions] Rechargement participant après inscription, participant_id:', data.participant_id);
+      await loadParticipantData(id);
+    } else {
+      console.warn('⚠️ [useCompetitions] Pas de participant_id retourné par joinCompetition');
+    }
     
     setLoading(false);
     return { success: true, data };
