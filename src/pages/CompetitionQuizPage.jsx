@@ -230,7 +230,7 @@ const CompetitionQuizPage = () => {
             {/* Actions */}
             <div className="flex gap-4">
               <button
-                onClick={() => navigate(`/competitions/${competitionId}/leaderboard`)}
+                onClick={() => navigate(`/competitions`)}
                 className="flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors"
               >
                 Voir le classement
