@@ -353,13 +353,13 @@ CREATE OR REPLACE FUNCTION get_competition_leaderboard(
 )
 RETURNS TABLE (
     user_id UUID,
-    full_name VARCHAR,
+    full_name TEXT,
     avatar_url TEXT,
     rank INTEGER,
     score INTEGER,
     correct_answers INTEGER,
     time_taken_seconds INTEGER,
-    location VARCHAR,
+    location TEXT,
     is_current_user BOOLEAN
 )
 LANGUAGE plpgsql
