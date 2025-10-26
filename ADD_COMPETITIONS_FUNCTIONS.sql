@@ -346,6 +346,9 @@ $$;
 -- ====================================
 -- 6. RÉCUPÉRER LE LEADERBOARD
 -- ====================================
+-- Supprimer l'ancienne fonction si elle existe (pour permettre le changement de type)
+DROP FUNCTION IF EXISTS get_competition_leaderboard(UUID, VARCHAR, INTEGER);
+
 CREATE OR REPLACE FUNCTION get_competition_leaderboard(
     p_competition_id UUID,
     p_scope VARCHAR DEFAULT 'global', -- 'global', 'regional', 'national'
