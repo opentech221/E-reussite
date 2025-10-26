@@ -115,7 +115,7 @@ const CompetitionQuizPage = () => {
 
     setIsSubmitting(true);
 
-    const currentQuestion = questions[currentQuestionIndex];
+    const currentQuestion = transformedQuestions[currentQuestionIndex];
     const timeTaken = Math.floor((Date.now() - questionStartTime) / 1000);
 
     const result = await submitAnswer(
@@ -248,7 +248,7 @@ const CompetitionQuizPage = () => {
     );
   }
 
-  const currentQuestion = questions[currentQuestionIndex];
+  const currentQuestion = transformedQuestions[currentQuestionIndex];
 
   if (!currentQuestion) {
     return (
@@ -304,7 +304,7 @@ const CompetitionQuizPage = () => {
 
           {/* Réponses */}
           <div className="space-y-3">
-            {currentQuestion.question.answers.map((answer, index) => {
+            {currentQuestion.question.answers?.map((answer, index) => {
               const isSelected = selectedAnswer === index;
               const isCorrect = showResult && index === currentQuestion.question.correct_answer;
               const isWrong = showResult && isSelected && !isCorrect;
