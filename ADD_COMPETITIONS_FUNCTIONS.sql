@@ -54,8 +54,13 @@ BEGIN
     ON CONFLICT (competition_id, user_id) DO NOTHING
     RETURNING id INTO v_participant_id;
     
-    -- Si nouvelle inscription, incrémenter le compteur
-    IF v_participant_id IS NOT NULL THEN
+    -- Si déjà inscrit, récupérer l'ID existant
+    IF v_participant_id IS NULL THEN
+        SELECT id INTO v_participant_id
+        FROM competition_participants
+        WHERE competition_id = p_competition_id AND user_id = p_user_id;
+    ELSE
+        -- Si nouvelle inscription, incrémenter le compteur
         UPDATE competitions
         SET current_participants = current_participants + 1
         WHERE id = p_competition_id;
@@ -216,12 +221,11 @@ BEGIN
     FROM competition_participants
     WHERE id = p_participant_id;
     
-    -- Attribuer les récompenses
-    UPDATE user_progress
-    SET 
-        total_points = total_points + v_competition.reward_points,
-        total_xp = total_xp + v_competition.reward_xp
-    WHERE user_id = v_participant.user_id;
+    -- Attribuer les récompenses dans user_points
+    INSERT INTO user_points (user_id, total_points)
+    VALUES (v_participant.user_id, v_competition.reward_points)
+    ON CONFLICT (user_id) DO UPDATE
+    SET total_points = user_points.total_points + v_competition.reward_points;
     
     RETURN jsonb_build_object(
         'success', true,
