@@ -87,9 +87,10 @@ DECLARE
     v_is_correct BOOLEAN;
     v_points INTEGER;
     v_participant RECORD;
+    v_correct_answer_index INTEGER;
 BEGIN
     -- Récupérer la question avec la bonne réponse
-    SELECT cq.*, q.correct_answer, q.points as base_points
+    SELECT cq.*, q.correct_option
     INTO v_question
     FROM competition_questions cq
     JOIN questions q ON q.id = cq.question_id
@@ -99,8 +100,17 @@ BEGIN
         RETURN jsonb_build_object('success', false, 'error', 'Question not found');
     END IF;
     
+    -- Convertir correct_option ('A', 'B', 'C', 'D') en index (0, 1, 2, 3)
+    v_correct_answer_index := CASE v_question.correct_option
+        WHEN 'A' THEN 0
+        WHEN 'B' THEN 1
+        WHEN 'C' THEN 2
+        WHEN 'D' THEN 3
+        ELSE -1
+    END;
+    
     -- Vérifier si la réponse est correcte
-    v_is_correct := (p_selected_answer = v_question.correct_answer);
+    v_is_correct := (p_selected_answer = v_correct_answer_index);
     
     -- Calculer les points (bonus si rapide)
     IF v_is_correct THEN
@@ -362,7 +372,7 @@ RETURNS TABLE (
     score INTEGER,
     correct_answers INTEGER,
     time_taken_seconds INTEGER,
-    location TEXT,
+    location VARCHAR,
     is_current_user BOOLEAN
 )
 LANGUAGE plpgsql
