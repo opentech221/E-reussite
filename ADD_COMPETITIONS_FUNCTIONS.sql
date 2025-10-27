@@ -240,13 +240,13 @@ BEGIN
     );
     
     -- Créer une notification de résultats (Phase 2)
-    PERFORM create_competition_notification(
+    PERFORM create_notification(
         v_participant.user_id,
         'competition_completed',
         v_competition.title || ' terminé !',
         'Rang #' || v_rank || ' - Score: ' || v_participant.score || ' points',
+        v_participant.competition_id,
         jsonb_build_object(
-            'competition_id', v_participant.competition_id,
             'rank', v_rank,
             'score', v_participant.score,
             'badges', v_badges_result
