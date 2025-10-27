@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCompetitions } from '@/hooks/useCompetitions';
+import SocialShareModal from '@/components/SocialShareModal';
 import { 
   Clock, 
   Target, 
@@ -13,7 +14,8 @@ import {
   ChevronRight,
   CheckCircle,
   XCircle,
-  Loader
+  Loader,
+  Share2
 } from 'lucide-react';
 
 const CompetitionQuizPage = () => {
@@ -42,6 +44,7 @@ const CompetitionQuizPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [finalResults, setFinalResults] = useState(null);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   // Charger les questions au démarrage
   useEffect(() => {
@@ -230,22 +233,44 @@ const CompetitionQuizPage = () => {
             {/* Actions */}
             <div className="flex gap-4">
               <button
+                onClick={() => setShowShareModal(true)}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all flex items-center justify-center gap-2"
+              >
+                <Share2 className="w-5 h-5" />
+                Partager mes résultats
+              </button>
+              <button
                 onClick={() => navigate(`/competitions`)}
                 className="flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors"
               >
                 Voir le classement
               </button>
-              <button
-                onClick={() => navigate('/competitions')}
-                className="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
-              >
-                Autres compétitions
-              </button>
             </div>
+
+            <button
+              onClick={() => navigate('/competitions')}
+              className="w-full px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
+            >
+              Autres compétitions
+            </button>
           </div>
         </div>
       </div>
-    );
+
+      {/* Modal de partage social */}
+      {showShareModal && finalResults && (
+        <SocialShareModal
+          isOpen={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          competitionTitle={currentCompetition?.title || 'Compétition'}
+          score={finalResults.score}
+          rank={finalResults.rank}
+          totalParticipants={currentCompetition?.current_participants || 0}
+          badges={finalResults.badges}
+        />
+      )}
+    </div>
+  );
   }
 
   const currentQuestion = transformedQuestions[currentQuestionIndex];
