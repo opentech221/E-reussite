@@ -195,6 +195,8 @@ DECLARE
     v_participant RECORD;
     v_competition RECORD;
     v_rank INTEGER;
+    v_badges_result JSONB;
+    v_is_personal_record BOOLEAN;
 BEGIN
     -- Marquer comme terminé
     UPDATE competition_participants
@@ -227,12 +229,38 @@ BEGIN
     ON CONFLICT (user_id) DO UPDATE
     SET total_points = user_points.total_points + v_competition.reward_points;
     
+    -- Vérifier et attribuer les badges (Phase 2)
+    v_badges_result := check_and_award_badges(v_participant.user_id, v_participant.competition_id);
+    
+    -- Vérifier si c'est un record personnel (Phase 2)
+    v_is_personal_record := check_personal_record(
+        v_participant.user_id, 
+        v_participant.competition_id, 
+        v_participant.score
+    );
+    
+    -- Créer une notification de résultats (Phase 2)
+    PERFORM create_competition_notification(
+        v_participant.user_id,
+        'competition_completed',
+        v_competition.title || ' terminé !',
+        'Rang #' || v_rank || ' - Score: ' || v_participant.score || ' points',
+        jsonb_build_object(
+            'competition_id', v_participant.competition_id,
+            'rank', v_rank,
+            'score', v_participant.score,
+            'badges', v_badges_result
+        )
+    );
+    
     RETURN jsonb_build_object(
         'success', true,
         'rank', v_rank,
         'score', v_participant.score,
         'reward_points', v_competition.reward_points,
-        'reward_xp', v_competition.reward_xp
+        'reward_xp', v_competition.reward_xp,
+        'badges', v_badges_result,
+        'is_personal_record', v_is_personal_record
     );
 END;
 $$;
