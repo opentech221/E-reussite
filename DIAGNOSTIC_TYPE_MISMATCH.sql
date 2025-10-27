@@ -36,24 +36,24 @@ ORDER BY ordinal_position;
 
 -- 4️⃣ Vérifier la signature de check_and_award_badges
 SELECT 
-    routine_name,
+    specific_name,
     parameter_name,
     data_type,
     ordinal_position
 FROM information_schema.parameters
-WHERE routine_schema = 'public'
-  AND routine_name = 'check_and_award_badges'
+WHERE specific_schema = 'public'
+  AND specific_name = 'check_and_award_badges'
 ORDER BY ordinal_position;
 
 -- 5️⃣ Vérifier la signature de create_notification
 SELECT 
-    routine_name,
+    specific_name,
     parameter_name,
     data_type,
     ordinal_position
 FROM information_schema.parameters
-WHERE routine_schema = 'public'
-  AND routine_name = 'create_notification'
+WHERE specific_schema = 'public'
+  AND specific_name = 'create_notification'
 ORDER BY ordinal_position;
 
 -- ====================================
