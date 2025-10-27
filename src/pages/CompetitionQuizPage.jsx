@@ -255,25 +255,24 @@ const CompetitionQuizPage = () => {
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Modal de partage social */}
-      {showShareModal && finalResults && (
-        <SocialShareModal
-          isOpen={showShareModal}
-          onClose={() => setShowShareModal(false)}
-          competitionTitle={currentCompetition?.title || 'Compétition'}
-          score={finalResults.score}
-          rank={finalResults.rank}
-          totalParticipants={currentCompetition?.current_participants || 0}
-          badges={finalResults.badges}
-        />
-      )}
-    </div>
-  );
+        {/* Modal de partage social */}
+        {showShareModal && finalResults && (
+          <SocialShareModal
+            isOpen={showShareModal}
+            onClose={() => setShowShareModal(false)}
+            competitionTitle={currentCompetition?.title || 'Compétition'}
+            score={finalResults.score}
+            rank={finalResults.rank}
+            totalParticipants={currentCompetition?.current_participants || 0}
+            badges={finalResults.badges}
+          />
+        )}
+      </div>
+    );
   }
 
-  const currentQuestion = transformedQuestions[currentQuestionIndex];
+const currentQuestion = transformedQuestions[currentQuestionIndex];
 
   if (!currentQuestion) {
     return (

@@ -158,7 +158,7 @@ BEGIN
         'reminder',
         '🔔 Rappel: Compétition dans 1h',
         'La compétition "' || v_competition.title || '" commence dans 1 heure. Préparez-vous!',
-        v_competition.start_date - INTERVAL '1 hour',
+        v_competition.starts_at - INTERVAL '1 hour',
         jsonb_build_object(
             'competition_id', v_competition.id,
             'competition_title', v_competition.title

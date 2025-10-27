@@ -137,7 +137,7 @@ BEGIN
         SELECT *
         FROM competitions
         WHERE status IN ('upcoming', 'active')
-          AND start_date BETWEEN NOW() AND NOW() + INTERVAL '2 hours'
+          AND starts_at BETWEEN NOW() AND NOW() + INTERVAL '2 hours'
     LOOP
         -- Pour chaque participant inscrit
         FOR v_participant IN
@@ -169,7 +169,7 @@ BEGIN
                 '"' || v_competition.title || '" démarre dans moins d''1 heure. Préparez-vous!',
                 jsonb_build_object(
                     'competition_id', v_competition.id,
-                    'start_date', v_competition.start_date
+                    'starts_at', v_competition.starts_at
                 )
             );
             
