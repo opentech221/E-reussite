@@ -9,9 +9,10 @@
 -- ====================================
 
 SELECT 
-    routine_name,
+    specific_name,
     parameter_name,
-    data_type
+    data_type,
+    ordinal_position
 FROM information_schema.parameters
 WHERE specific_schema = 'public'
   AND specific_name LIKE '%check_and_award_badges%'
@@ -26,9 +27,10 @@ ORDER BY ordinal_position;
 -- ====================================
 
 SELECT 
-    routine_name,
+    specific_name,
     parameter_name,
-    data_type
+    data_type,
+    ordinal_position
 FROM information_schema.parameters
 WHERE specific_schema = 'public'
   AND specific_name LIKE '%check_personal_record%'
@@ -44,9 +46,10 @@ ORDER BY ordinal_position;
 -- ====================================
 
 SELECT 
-    routine_name,
+    specific_name,
     parameter_name,
-    data_type
+    data_type,
+    ordinal_position
 FROM information_schema.parameters
 WHERE specific_schema = 'public'
   AND specific_name LIKE '%create_notification%'
@@ -66,9 +69,10 @@ ORDER BY ordinal_position;
 -- ====================================
 
 SELECT 
-    routine_name,
+    specific_name,
     parameter_name,
-    data_type
+    data_type,
+    ordinal_position
 FROM information_schema.parameters
 WHERE specific_schema = 'public'
   AND specific_name LIKE '%complete_competition_participant%'
