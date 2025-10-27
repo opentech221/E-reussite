@@ -8,19 +8,19 @@
 -- ÉTAPE 1: Récupérer vos IDs actuels
 -- ====================================
 
--- Copier le participant_id du dernier quiz en cours
+-- Copier le participant_id du dernier quiz (n'importe quel statut)
 SELECT 
     'Votre participant_id:' as info,
     id as participant_id,
     user_id,
     competition_id,
     status,
-    score
+    score,
+    completed_at
 FROM competition_participants
-WHERE status = 'in_progress'
-  AND user_id = auth.uid()
+WHERE user_id = auth.uid()
 ORDER BY created_at DESC
-LIMIT 1;
+LIMIT 5;
 
 -- ====================================
 -- ÉTAPE 2: Tester complete_competition_participant
@@ -37,11 +37,12 @@ SELECT complete_competition_participant('VOTRE_PARTICIPANT_ID');
 -- ====================================
 
 -- Si l'étape 2 échoue, tester check_and_award_badges seul
+-- ⚠️ Remplacer les UUIDs par vos vraies valeurs
 SELECT 
     'Test check_and_award_badges' as test,
     check_and_award_badges(
-        (SELECT user_id FROM competition_participants WHERE status = 'in_progress' AND user_id = auth.uid() LIMIT 1),
-        (SELECT competition_id FROM competition_participants WHERE status = 'in_progress' AND user_id = auth.uid() LIMIT 1)
+        'VOTRE_USER_ID'::UUID,
+        'VOTRE_COMPETITION_ID'::UUID
     ) as resultat;
 
 -- ====================================
@@ -51,8 +52,8 @@ SELECT
 SELECT 
     'Test check_personal_record' as test,
     check_personal_record(
-        (SELECT user_id FROM competition_participants WHERE status = 'in_progress' AND user_id = auth.uid() LIMIT 1),
-        (SELECT competition_id FROM competition_participants WHERE status = 'in_progress' AND user_id = auth.uid() LIMIT 1),
+        'VOTRE_USER_ID'::UUID,
+        'VOTRE_COMPETITION_ID'::UUID,
         180 -- Score de test
     ) as resultat;
 
@@ -63,10 +64,10 @@ SELECT
 SELECT 
     'Test create_notification' as test,
     create_notification(
-        auth.uid(),
+        'VOTRE_USER_ID'::UUID,
         'test',
         'Test',
         'Test notification',
-        (SELECT competition_id FROM competition_participants WHERE status = 'in_progress' AND user_id = auth.uid() LIMIT 1),
+        'VOTRE_COMPETITION_ID'::UUID,
         jsonb_build_object('test', true)
     ) as notification_id;
