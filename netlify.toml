@@ -1,0 +1,36 @@
+# =============================================
+# CONFIGURATION NETLIFY - E-Réussite
+# =============================================
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+  
+[build.environment]
+  NODE_VERSION = "18"
+
+# =============================================
+# SCHEDULED FUNCTIONS (Rappels automatiques)
+# =============================================
+[[functions]]
+  path = "netlify/functions/competition-reminders.js"
+  schedule = "*/15 * * * *"  # Toutes les 15 minutes
+  
+# =============================================
+# REDIRECTS (SPA React Router)
+# =============================================
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# =============================================
+# HEADERS (Sécurité)
+# =============================================
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
