@@ -10,11 +10,10 @@
   NODE_VERSION = "18"
 
 # =============================================
-# SCHEDULED FUNCTIONS (Rappels automatiques)
+# FUNCTIONS DIRECTORY
 # =============================================
-[[functions]]
-  path = "netlify/functions/competition-reminders.js"
-  schedule = "*/15 * * * *"  # Toutes les 15 minutes
+[functions]
+  directory = "netlify/functions"
   
 # =============================================
 # REDIRECTS (SPA React Router)
