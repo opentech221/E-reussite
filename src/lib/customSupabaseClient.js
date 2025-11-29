@@ -4,7 +4,11 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase configuration manquante: définissez VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY dans votre .env');
+  console.error('❌ ERREUR CRITIQUE: Variables Supabase manquantes!');
+  console.error('VITE_SUPABASE_URL:', supabaseUrl ? '✅ Définie' : '❌ Manquante');
+  console.error('VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? '✅ Définie' : '❌ Manquante');
+  console.error('💡 Solution: Configurez les variables dans Netlify ou .env');
+  throw new Error('Configuration Supabase manquante - Vérifiez les variables d\'environnement');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
