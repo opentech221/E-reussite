@@ -20,9 +20,17 @@ const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const UpdatePassword = lazy(() => import('@/pages/UpdatePassword'));
 const AdminLayout = lazy(() => import('@/components/admin/AdminLayout'));
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
+const AdminDashboardNew = lazy(() => import('@/pages/admin/AdminDashboardNew'));
 const AdminUsers = lazy(() => import('@/pages/admin/AdminUsers'));
+const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'));
 const AdminCourses = lazy(() => import('@/pages/admin/AdminCourses'));
+const AdminCoursesPage = lazy(() => import('@/pages/admin/AdminCoursesPage'));
 const AdminProducts = lazy(() => import('@/pages/admin/AdminProducts'));
+const AdminQuizPage = lazy(() => import('@/pages/admin/AdminQuizPage'));
+const AdminOrientationPage = lazy(() => import('@/pages/admin/AdminOrientationPage'));
+const AdminGamificationPage = lazy(() => import('@/pages/admin/AdminGamificationPage'));
+const AdminAnalyticsPage = lazy(() => import('@/pages/admin/AdminAnalyticsPage'));
+const AdminSettingsPage = lazy(() => import('@/pages/admin/AdminSettingsPage'));
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AdminRoute from '@/components/AdminRoute';
 const Quiz = lazy(() => import('@/pages/Quiz'));
@@ -120,9 +128,15 @@ function App() {
           {/* Admin Routes */}
           <Route element={<AdminRoute /> }>
             <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="users" element={<AdminUsers />} />
-              <Route path="courses" element={<AdminCourses />} />
+              <Route index element={<AdminDashboardNew />} />
+              <Route path="users" element={<AdminUsersPage />} />
+              <Route path="courses" element={<AdminCoursesPage />} />
+              <Route path="quiz" element={<AdminQuizPage />} />
+              <Route path="orientation" element={<AdminOrientationPage />} />
+              <Route path="gamification" element={<AdminGamificationPage />} />
+              <Route path="analytics" element={<AdminAnalyticsPage />} />
+              <Route path="settings" element={<AdminSettingsPage />} />
+              {/* Legacy routes */}
               <Route path="products" element={<AdminProducts />} />
             </Route>
           </Route>

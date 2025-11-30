@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -25,15 +25,58 @@ import {
   Zap,
   Users,
   GraduationCap,
-  Compass
+  Compass,
+  Shield
 } from 'lucide-react';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { supabase } from '@/lib/customSupabaseClient';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    if (user) {
+      const fetchUserRole = async () => {
+        console.log('🔍 Fetching role for user:', user.id);
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        
+        console.log('📊 User role data:', data, 'Error:', error);
+        
+        if (data) {
+          setUserRole(data.role);
+          console.log('✅ User role set to:', data.role);
+        }
+      };
+      fetchUserRole();
+    }
+  }, [user]);
+
+  // Force refresh user role every time location changes (including manual navigation)
+  useEffect(() => {
+    if (user) {
+      const refreshUserRole = async () => {
+        const { data } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        
+        if (data && data.role !== userRole) {
+          console.log('🔄 Role updated from', userRole, 'to', data.role);
+          setUserRole(data.role);
+        }
+      };
+      refreshUserRole();
+    }
+  }, [location, user]);
 
   const menuItems = [
     { 
@@ -164,6 +207,19 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     },
   ];
 
+  // Admin menu item (only for admins)
+  const adminMenuItem = {
+    path: '/admin',
+    icon: Shield,
+    label: 'Administration',
+    description: 'Panneau admin',
+    badge: 'ADMIN',
+    badgeColor: 'bg-gradient-to-r from-red-500 to-pink-500'
+  };
+
+  // Add admin menu if user is admin
+  const fullMenuItems = userRole === 'admin' ? [...menuItems, adminMenuItem] : menuItems;
+
   const isActive = (path) => {
     if (path === '/dashboard') {
       return location.pathname === '/dashboard';
@@ -227,7 +283,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-6 px-3">
           <div className="space-y-1">
-            {menuItems.map((item) => {
+            {fullMenuItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path);
               

@@ -64,30 +64,19 @@ const Social = () => {
 
       setUserStats(pointsData);
 
-      // 2. Récupérer badges récents avec JOIN
+      // 2. Récupérer badges récents (données directes)
       const { data: badgesData } = await supabase
         .from('user_badges')
-        .select(`
-          id,
-          earned_at,
-          badge_id,
-          badges!inner (
-            badge_id,
-            name,
-            icon_name,
-            description
-          )
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('earned_at', { ascending: false })
         .limit(5);
 
-      // Transformer pour compatibilité avec le reste du code
+      // Les badges sont déjà au bon format
       const transformedBadges = badgesData?.map(b => ({
-        badge_id: b.badge_id,
-        badge_name: b.badges.name, // Pour compatibilité
+        badge_name: b.badge_name || 'Badge',
         earned_at: b.earned_at,
-        icon_name: b.badges.icon_name
+        icon_name: b.badge_icon || '🏆'
       })) || [];
 
       setRecentAchievements(transformedBadges);

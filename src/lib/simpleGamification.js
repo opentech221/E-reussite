@@ -83,34 +83,15 @@ export class SimpleGamificationEngine {
         progressToNextLevel
       });
 
-      // Récupérer les badges récents avec JOIN via badge_id (FK)
-      const { data: rawBadgesData, error: badgesError } = await this.supabase
+      // Récupérer les badges récents (données stockées directement dans user_badges)
+      const { data: badgesData, error: badgesError } = await this.supabase
         .from('user_badges')
-        .select(`
-          id,
-          earned_at,
-          badge_id,
-          badges!inner (
-            badge_id,
-            name,
-            icon_name,
-            description
-          )
-        `)
+        .select('*')
         .eq('user_id', this.userId)
         .order('earned_at', { ascending: false })
         .limit(5);
 
-      // Transformer pour compatibilité avec le code existant
-      const badgesData = rawBadgesData?.map(b => ({
-        id: b.id,
-        badge_id: b.badge_id,
-        badge_name: b.badges.name, // Pour compatibilité
-        badge_icon: b.badges.icon_name,
-        badge_description: b.badges.description,
-        badge_rarity: 'rare', // Valeur par défaut
-        earned_at: b.earned_at
-      })) || [];
+      // Les badges sont déjà au bon format
 
       console.log('🎮 [getGamificationStatus] Badges:', badgesData, 'Erreur:', badgesError);
 
