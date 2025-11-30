@@ -561,22 +561,12 @@ export const dbHelpers = {
 
   /**
    * Get all badges earned by a user
-   * Returns badges with JOIN to get badge details from badges table
+   * Badges are stored directly in user_badges table (no FK to badges table)
    */
   async getUserBadges(userId) {
-    const { data: rawData, error } = await supabase
+    const { data, error } = await supabase
       .from('user_badges')
-      .select(`
-        id,
-        earned_at,
-        badge_id,
-        badges!inner (
-          badge_id,
-          name,
-          icon_name,
-          description
-        )
-      `)
+      .select('*')
       .eq('user_id', userId)
       .order('earned_at', { ascending: false });
     
@@ -585,17 +575,8 @@ export const dbHelpers = {
       return [];
     }
 
-    // Transformer pour compatibilité avec le code existant
-    const transformed = rawData?.map(b => ({
-      id: b.id,
-      badge_id: b.badge_id,
-      badge_name: b.badges.name, // Pour compatibilité
-      badge_icon: b.badges.icon_name,
-      badge_description: b.badges.description,
-      earned_at: b.earned_at
-    })) || [];
-
-    return transformed;
+    // Les badges sont déjà au bon format
+    return data || [];
   },
 
   /**

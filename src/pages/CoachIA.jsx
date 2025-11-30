@@ -355,17 +355,7 @@ const CoachIA = () => {
       // Récupérer badges avec JOIN
       const { data: badgesData } = await supabase
         .from('user_badges')
-        .select(`
-          id,
-          earned_at,
-          badge_id,
-          badges!inner (
-            badge_id,
-            name,
-            icon_name,
-            description
-          )
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('earned_at', { ascending: false });
 

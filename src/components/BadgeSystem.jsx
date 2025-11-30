@@ -377,21 +377,11 @@ const BadgeSystem = () => {
     }
     
     try {
-      // Query avec JOIN vers badges pour récupérer les infos complètes
+      // Récupérer les badges gagnés (données directes)
       const { data: badgesData, error } = await supabase
-        .from('user_badges')
-        .select(`
-          id,
-          earned_at,
-          badge_id,
-          badges!inner (
-            badge_id,
-            name,
-            icon_name,
-            description
-          )
-        `)
-        .eq('user_id', user.id);
+        .from("user_badges")
+        .select('id, badge_name, badge_icon, badge_description, badge_type, earned_at')
+        .eq("user_id", user.id);
       
       if (error) {
         console.error('Error fetching badges:', error);
@@ -400,10 +390,10 @@ const BadgeSystem = () => {
       
       console.log('📛 Badges from DB:', badgesData);
       
-      // Extraire les badge_id directement (déjà au bon format)
-      const badgeIds = badgesData?.map(b => b.badge_id).filter(Boolean) || [];
+      // Extraire les noms de badges déjà gagnés
+      const earnedBadgeNames = badgesData?.map(b => b.badge_name).filter(Boolean) || [];
       
-      console.log('✅ Badge IDs:', badgeIds);
+      setEarnedBadges(earnedBadgeNames);
       setUserBadges(badgeIds);
       
     } catch (error) {

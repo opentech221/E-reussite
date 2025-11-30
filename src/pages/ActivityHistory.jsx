@@ -257,32 +257,12 @@ const ActivityHistory = () => {
         });
       }
 
-      // 4. Récupérer les badges obtenus - JOIN avec table badges
-      const { data: rawEarnedBadges } = await supabase
+      // 4. Récupérer les badges obtenus (données directes)
+      const { data: badgesData } = await supabase
         .from('user_badges')
-        .select(`
-          id,
-          earned_at,
-          badge_id,
-          badges!inner (
-            badge_id,
-            name,
-            icon_name,
-            description
-          )
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('earned_at', { ascending: false });
-
-      // Transformer pour compatibilité
-      const earnedBadges = rawEarnedBadges?.map(b => ({
-        id: b.id,
-        badge_id: b.badge_id,
-        badge_name: b.badges.name,
-        badge_description: b.badges.description,
-        badge_icon: b.badges.icon_name,
-        earned_at: b.earned_at
-      })) || [];
 
       if (earnedBadges && earnedBadges.length > 0) {
         earnedBadges.forEach(badge => {
