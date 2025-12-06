@@ -228,35 +228,36 @@ const AdminDashboardNew = () => {
         <title>Dashboard Admin - E-Réussite</title>
       </Helmet>
 
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="flex justify-between items-center">
+      <div className="space-y-6 lg:space-y-8">
+        {/* Header - Mobile First */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-4xl font-bold font-heading text-slate-900">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-heading text-slate-900">
               Tableau de Bord Admin
             </h1>
-            <p className="text-slate-600 mt-2">
+            <p className="text-sm sm:text-base text-slate-600 mt-1 sm:mt-2">
               Vue d'ensemble de votre plateforme éducative
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 sm:gap-3">
             <Button
               onClick={handleRefresh}
               variant="outline"
               disabled={refreshing}
+              className="flex-1 sm:flex-none min-h-11"
             >
-              <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-              Actualiser
+              <RefreshCw className={`w-4 h-4 sm:mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Actualiser</span>
             </Button>
-            <Button onClick={handleExport}>
-              <Download className="w-4 h-4 mr-2" />
-              Exporter CSV
+            <Button onClick={handleExport} className="flex-1 sm:flex-none min-h-11">
+              <Download className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Exporter CSV</span>
             </Button>
           </div>
         </div>
 
-        {/* KPIs Principaux */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* KPIs Principaux - Mobile First Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           {mainKPIs.map((kpi, index) => (
             <motion.div
               key={index}
@@ -266,20 +267,20 @@ const AdminDashboardNew = () => {
             >
               <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-slate-600">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-slate-600">
                     {kpi.title}
                   </CardTitle>
                   <div className={`p-2 rounded-lg ${kpi.bgColor}`}>
-                    <kpi.icon className={`h-5 w-5 ${kpi.color}`} />
+                    <kpi.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${kpi.color}`} />
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-slate-900">{kpi.value}</div>
-                  <div className="flex items-center mt-2 text-sm">
+                  <div className="text-2xl sm:text-3xl font-bold text-slate-900">{kpi.value}</div>
+                  <div className="flex items-center mt-2 text-xs sm:text-sm">
                     {kpi.trend === 'up' ? (
-                      <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+                      <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-1" />
                     ) : kpi.trend === 'down' ? (
-                      <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
+                      <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4 text-red-500 mr-1" />
                     ) : null}
                     <span className="text-slate-500">{kpi.change}</span>
                   </div>
@@ -289,8 +290,8 @@ const AdminDashboardNew = () => {
           ))}
         </div>
 
-        {/* KPIs Secondaires */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* KPIs Secondaires - Mobile First Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
           {secondaryKPIs.map((kpi, index) => (
             <motion.div
               key={index}
@@ -300,29 +301,62 @@ const AdminDashboardNew = () => {
             >
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
-                  <kpi.icon className={`h-5 w-5 ${kpi.color}`} />
+                  <CardTitle className="text-xs sm:text-sm font-medium">{kpi.title}</CardTitle>
+                  <kpi.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${kpi.color}`} />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold">{kpi.value}</div>
+                  <div className="text-2xl sm:text-3xl font-bold">{kpi.value}</div>
                 </CardContent>
               </Card>
             </motion.div>
           ))}
         </div>
 
-        {/* Graphiques */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Graphique d'activité */}
+        {/* Graphiques - Responsive */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+          {/* Graphique d'activité - Mobile Responsive */}
           <Card>
             <CardHeader>
-              <CardTitle>Activité des 7 derniers jours</CardTitle>
+              <CardTitle className="text-base sm:text-lg">Activité des 7 derniers jours</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={250} className="sm:hidden">
                 <AreaChart data={activityData}>
                   <defs>
                     <linearGradient id="colorActivity" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={COLORS.primary} stopOpacity={0.8} />
+                      <stop offset="95%" stopColor={COLORS.primary} stopOpacity={0.1} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis
+                    dataKey="date"
+                    stroke="#64748b"
+                    tick={{ fontSize: 10 }}
+                    tickFormatter={(value) => new Date(value).toLocaleDateString('fr-FR', { day: '2-digit' })}
+                  />
+                  <YAxis stroke="#64748b" tick={{ fontSize: 10 }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      fontSize: '12px'
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="count"
+                    stroke={COLORS.primary}
+                    fillOpacity={1}
+                    fill="url(#colorActivity)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+              <ResponsiveContainer width="100%" height={300} className="hidden sm:block">
+                <AreaChart data={activityData}>
+                  <defs>
+                    <linearGradient id="colorActivity2" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={COLORS.primary} stopOpacity={0.8} />
                       <stop offset="95%" stopColor={COLORS.primary} stopOpacity={0.1} />
                     </linearGradient>
@@ -346,27 +380,27 @@ const AdminDashboardNew = () => {
                     dataKey="count"
                     stroke={COLORS.primary}
                     fillOpacity={1}
-                    fill="url(#colorActivity)"
+                    fill="url(#colorActivity2)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
-          {/* Top 5 Élèves */}
+          {/* Top 5 Élèves - Mobile Cards */}
           <Card>
             <CardHeader>
-              <CardTitle>Top 5 Élèves - Classement</CardTitle>
+              <CardTitle className="text-base sm:text-lg">Top 5 Élèves - Classement</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {leaderboard.slice(0, 5).map((user, index) => (
                   <div
                     key={user.user_id}
                     className="flex items-center justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                      <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-sm sm:text-base flex-shrink-0 ${
                         index === 0 ? 'bg-yellow-500 text-white' :
                         index === 1 ? 'bg-slate-400 text-white' :
                         index === 2 ? 'bg-orange-500 text-white' :
@@ -374,18 +408,18 @@ const AdminDashboardNew = () => {
                       }`}>
                         {index + 1}
                       </div>
-                      <div>
-                        <p className="font-medium text-slate-900">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-slate-900 text-sm sm:text-base truncate">
                           {user.profiles?.full_name || 'Utilisateur'}
                         </p>
-                        <p className="text-sm text-slate-500">
-                          Niveau {user.level} • {user.profiles?.region || 'Non spécifié'}
+                        <p className="text-xs sm:text-sm text-slate-500 truncate">
+                          Niv. {user.level} • {user.profiles?.region || 'N/A'}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-primary">{user.total_points} pts</p>
-                      <p className="text-sm text-slate-500">{user.quizzes_completed} quiz</p>
+                    <div className="text-right flex-shrink-0 ml-2">
+                      <p className="font-bold text-primary text-sm sm:text-base">{user.total_points} pts</p>
+                      <p className="text-xs text-slate-500">{user.quizzes_completed} quiz</p>
                     </div>
                   </div>
                 ))}
@@ -394,11 +428,11 @@ const AdminDashboardNew = () => {
           </Card>
         </div>
 
-        {/* Alertes */}
+        {/* Alertes - Mobile Responsive */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-blue-500" />
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
               Alertes et Notifications
             </CardTitle>
           </CardHeader>
@@ -407,12 +441,12 @@ const AdminDashboardNew = () => {
               {alerts.map((alert, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-3 p-4 rounded-lg bg-blue-50 border border-blue-200"
+                  className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg bg-blue-50 border border-blue-200"
                 >
-                  <alert.icon className={`w-5 h-5 ${alert.color} mt-0.5`} />
-                  <div>
-                    <p className="font-medium text-slate-900">{alert.title}</p>
-                    <p className="text-sm text-slate-600 mt-1">{alert.message}</p>
+                  <alert.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${alert.color} mt-0.5 flex-shrink-0`} />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-slate-900 text-sm sm:text-base">{alert.title}</p>
+                    <p className="text-xs sm:text-sm text-slate-600 mt-1">{alert.message}</p>
                   </div>
                 </div>
               ))}
@@ -420,24 +454,24 @@ const AdminDashboardNew = () => {
           </CardContent>
         </Card>
 
-        {/* Actions Rapides */}
+        {/* Actions Rapides - Mobile Touch-Friendly */}
         <Card>
           <CardHeader>
-            <CardTitle>Actions Rapides</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Actions Rapides</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button variant="outline" className="h-auto py-4 flex flex-col items-center gap-2">
-                <Users className="w-6 h-6 text-blue-500" />
-                <span>Gérer les Utilisateurs</span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              <Button variant="outline" className="h-auto py-4 flex flex-col items-center gap-2 min-h-20 sm:min-h-24">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
+                <span className="text-sm sm:text-base">Gérer les Utilisateurs</span>
               </Button>
-              <Button variant="outline" className="h-auto py-4 flex flex-col items-center gap-2">
-                <BookOpen className="w-6 h-6 text-green-500" />
-                <span>Ajouter un Cours</span>
+              <Button variant="outline" className="h-auto py-4 flex flex-col items-center gap-2 min-h-20 sm:min-h-24">
+                <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
+                <span className="text-sm sm:text-base">Ajouter un Cours</span>
               </Button>
-              <Button variant="outline" className="h-auto py-4 flex flex-col items-center gap-2">
-                <Target className="w-6 h-6 text-purple-500" />
-                <span>Voir les Statistiques</span>
+              <Button variant="outline" className="h-auto py-4 flex flex-col items-center gap-2 min-h-20 sm:min-h-24">
+                <Target className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500" />
+                <span className="text-sm sm:text-base">Voir les Statistiques</span>
               </Button>
             </div>
           </CardContent>
