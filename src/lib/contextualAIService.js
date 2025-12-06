@@ -38,7 +38,7 @@ class ContextualAIService {
 
     // Initialiser Gemini (fallback) - API REST v1
     this.geminiApiKey = apiKey;
-    this.geminiModel = 'gemini-1.5-flash';
+    this.geminiModel = 'gemini-1.5-flash-latest';
     this.geminiApiUrl = `https://generativelanguage.googleapis.com/v1/models/${this.geminiModel}:generateContent`;
     
     if (!apiKey) {
