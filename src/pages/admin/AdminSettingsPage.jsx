@@ -81,19 +81,19 @@ const AdminSettingsPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Paramètres & Sécurité</h1>
-        <p className="text-slate-600 mt-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100">Paramètres & Sécurité</h1>
+        <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-1 sm:mt-2">
           Configuration générale et sécurité de la plateforme
         </p>
       </div>
 
       {/* Tabs */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-wrap gap-2">
+      <Card className="dark:bg-slate-800 dark:border-slate-700">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex overflow-x-auto gap-2 pb-2 sm:pb-0 scrollbar-hide">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
@@ -101,10 +101,12 @@ const AdminSettingsPage = () => {
                   key={tab.id}
                   variant={activeTab === tab.id ? 'default' : 'outline'}
                   onClick={() => setActiveTab(tab.id)}
-                  className="flex items-center gap-2"
+                  className={`flex items-center gap-2 min-h-11 whitespace-nowrap flex-shrink-0 ${
+                    activeTab !== tab.id ? 'dark:border-slate-600 dark:hover:bg-slate-700' : ''
+                  }`}
                 >
                   <Icon className="w-4 h-4" />
-                  {tab.label}
+                  <span className="text-sm sm:text-base">{tab.label}</span>
                 </Button>
               );
             })}
@@ -114,72 +116,75 @@ const AdminSettingsPage = () => {
 
       {/* General Tab */}
       {activeTab === 'general' && (
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Configuration du Site</CardTitle>
+        <div className="space-y-4 sm:space-y-6">
+          <Card className="dark:bg-slate-800 dark:border-slate-700">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl dark:text-slate-100">Configuration du Site</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
               <div>
-                <label className="text-sm font-medium text-slate-700">Nom du site</label>
+                <label className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">Nom du site</label>
                 <Input
                   value={siteSettings.siteName}
                   onChange={(e) => setSiteSettings({ ...siteSettings, siteName: e.target.value })}
+                  className="mt-1 min-h-11 dark:bg-slate-900 dark:border-slate-700"
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium text-slate-700">Email de contact</label>
+                <label className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">Email de contact</label>
                 <Input
                   type="email"
                   value={siteSettings.contactEmail}
                   onChange={(e) => setSiteSettings({ ...siteSettings, contactEmail: e.target.value })}
+                  className="mt-1 min-h-11 dark:bg-slate-900 dark:border-slate-700"
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium text-slate-700">Email de support</label>
+                <label className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">Email de support</label>
                 <Input
                   type="email"
                   value={siteSettings.supportEmail}
                   onChange={(e) => setSiteSettings({ ...siteSettings, supportEmail: e.target.value })}
+                  className="mt-1 min-h-11 dark:bg-slate-900 dark:border-slate-700"
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium text-slate-700">Couleur principale</label>
-                <div className="flex gap-2">
+                <label className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">Couleur principale</label>
+                <div className="flex flex-col sm:flex-row gap-2 mt-1">
                   <Input
                     type="color"
                     value={siteSettings.primaryColor}
                     onChange={(e) => setSiteSettings({ ...siteSettings, primaryColor: e.target.value })}
-                    className="w-20"
+                    className="w-full sm:w-20 h-11 dark:bg-slate-900 dark:border-slate-700"
                   />
                   <Input
                     type="text"
                     value={siteSettings.primaryColor}
                     onChange={(e) => setSiteSettings({ ...siteSettings, primaryColor: e.target.value })}
-                    className="flex-1"
+                    className="flex-1 min-h-11 dark:bg-slate-900 dark:border-slate-700"
                   />
                 </div>
               </div>
 
-              <Button onClick={handleSaveSettings} className="w-full">
+              <Button onClick={handleSaveSettings} className="w-full min-h-11">
                 <Save className="w-4 h-4 mr-2" />
                 Enregistrer les modifications
               </Button>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Logo & Médias</CardTitle>
+          <Card className="dark:bg-slate-800 dark:border-slate-700">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl dark:text-slate-100">Logo & Médias</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center">
-                <Upload className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-                <p className="text-slate-600 mb-2">Glissez-déposez votre logo ici</p>
-                <p className="text-xs text-slate-500">ou cliquez pour parcourir (PNG, JPG max 2MB)</p>
+            <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
+              <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-6 sm:p-8 text-center">
+                <Upload className="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 dark:text-slate-500 mx-auto mb-3" />
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 mb-2">Glissez-déposez votre logo ici</p>
+                <p className="text-xs text-slate-500 dark:text-slate-500">ou cliquez pour parcourir (PNG, JPG max 2MB)</p>
               </div>
             </CardContent>
           </Card>
@@ -188,14 +193,14 @@ const AdminSettingsPage = () => {
 
       {/* Users & Roles Tab */}
       {activeTab === 'users' && (
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Rôles & Permissions</span>
-                <Button size="sm">
-                  <Users className="w-4 h-4 mr-2" />
-                  Nouveau Rôle
+        <div className="space-y-4 sm:space-y-6">
+          <Card className="dark:bg-slate-800 dark:border-slate-700">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <span className="text-lg sm:text-xl dark:text-slate-100">Rôles & Permissions</span>
+                <Button size="sm" className="w-full sm:w-auto min-h-11">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Ajouter Rôle
                 </Button>
               </CardTitle>
             </CardHeader>
@@ -243,10 +248,10 @@ const AdminSettingsPage = () => {
 
       {/* Security Tab */}
       {activeTab === 'security' && (
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Journal d'Activité</CardTitle>
+        <div className="space-y-4 sm:space-y-6">
+          <Card className="dark:bg-slate-800 dark:border-slate-700">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl dark:text-slate-100">Journal d'Activité</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
@@ -294,12 +299,12 @@ const AdminSettingsPage = () => {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Sessions Actives</CardTitle>
+          <Card className="dark:bg-slate-800 dark:border-slate-700">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl dark:text-slate-100">Sessions Actives</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className="p-4 sm:p-6">
+              <div className="space-y-3 sm:space-y-4">
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
                     <p className="font-medium">Session actuelle</p>
@@ -378,12 +383,12 @@ const AdminSettingsPage = () => {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>État du Système</CardTitle>
+          <Card className="dark:bg-slate-800 dark:border-slate-700">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl dark:text-slate-100">État du Système</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="p-4 sm:p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-3">
                     <Database className="w-5 h-5 text-blue-600" />
