@@ -1040,6 +1040,30 @@ export const dbHelpers = {
       console.error('❌ [SharedLinks] Erreur stats:', error);
       return { data: null, error };
     }
+  },
+
+  // Streak History Management
+  async getStreakHistory(userId, days = 90) {
+    try {
+      const { data, error } = await supabase
+        .from('streak_history')
+        .select('date, streak_value')
+        .eq('user_id', userId)
+        .gte('date', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+        .order('date', { ascending: false });
+
+      if (error) throw error;
+      
+      // Transformer les données pour le calendrier
+      return data.map(item => ({
+        date: item.date,
+        streak_value: item.streak_value,
+        study_hours: null // TODO: calculer depuis user_progression si besoin
+      }));
+    } catch (error) {
+      console.error('❌ [StreakHistory] Erreur fetch:', error);
+      return [];
+    }
   }
 };
 
