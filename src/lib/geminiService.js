@@ -18,7 +18,7 @@ class GeminiService {
     try {
       this.genAI = new GoogleGenerativeAI(apiKey);
       this.model = this.genAI.getGenerativeModel({
-        model: 'gemini-1.5-pro',
+        model: 'gemini-2.0-flash-exp',
         generationConfig: {
           temperature: 0.9,
           topK: 40,
@@ -27,7 +27,7 @@ class GeminiService {
         }
       });
       
-      console.log('✅ [Gemini] Service initialisé (gemini-1.5-pro)');
+      console.log('✅ [Gemini] Service initialisé (gemini-2.0-flash-exp)');
     } catch (error) {
       console.error('❌ [Gemini] Erreur initialisation:', error);
       this.genAI = null;
@@ -188,7 +188,7 @@ class GeminiService {
   getModelInfo() {
     return {
       provider: 'gemini',
-      model: 'gemini-1.5-pro',
+      model: 'gemini-2.0-flash-exp',
       capabilities: ['text', 'vision', 'streaming'],
       available: this.isAvailable()
     };

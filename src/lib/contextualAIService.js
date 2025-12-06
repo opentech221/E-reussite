@@ -44,7 +44,7 @@ class ContextualAIService {
       try {
         this.genAI = new GoogleGenerativeAI(apiKey);
         this.model = this.genAI.getGenerativeModel({ 
-          model: 'gemini-1.5-pro',
+          model: 'gemini-2.0-flash-exp',
           generationConfig: {
             temperature: 0.9,
             topK: 40,
