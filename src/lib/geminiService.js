@@ -1,38 +1,20 @@
 /**
  * GEMINI AI SERVICE
- * Service dédié pour Google Gemini 2.0 Flash
+ * Service utilisant l'API REST v1 pour gemini-1.5-flash
  */
-
-import { GoogleGenerativeAI } from '@google/generative-ai';
 
 class GeminiService {
   constructor() {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    this.apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    this.model = 'gemini-1.5-flash';
+    this.apiUrl = `https://generativelanguage.googleapis.com/v1/models/${this.model}:generateContent`;
     
-    if (!apiKey) {
+    if (!this.apiKey) {
       console.warn('⚠️ [Gemini] Clé API Gemini manquante');
-      this.genAI = null;
       return;
     }
-
-    try {
-      this.genAI = new GoogleGenerativeAI(apiKey);
-      this.model = this.genAI.getGenerativeModel({
-        model: 'gemini-2.0-flash-exp',
-        generationConfig: {
-          temperature: 0.9,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 8192,
-        }
-      });
-      
-      console.log('✅ [Gemini] Service initialisé (gemini-2.0-flash-exp)');
-    } catch (error) {
-      console.error('❌ [Gemini] Erreur initialisation:', error);
-      this.genAI = null;
-      this.model = null;
-    }
+    
+    console.log('✅ [Gemini] Service initialisé (gemini-1.5-flash via API v1)');
   }
 
   /**
@@ -43,7 +25,7 @@ class GeminiService {
    * @returns {Promise<Object>} { success, content, usage, provider }
    */
   async generateResponse(prompt, conversationHistory = [], systemPrompt = null) {
-    if (!this.model) {
+    if (!this.apiKey) {
       return {
         success: false,
         error: 'Service Gemini non initialisé',
@@ -57,35 +39,65 @@ class GeminiService {
         historyLength: conversationHistory.length
       });
 
-      // Construction du prompt complet
-      let fullPrompt = '';
+      // Construction des messages
+      const contents = [];
       
+      // Ajouter le system prompt si présent
       if (systemPrompt) {
-        fullPrompt += `${systemPrompt}\n\n`;
+        contents.push({
+          role: 'user',
+          parts: [{ text: systemPrompt }]
+        });
+        contents.push({
+          role: 'model',
+          parts: [{ text: 'Compris, je vais suivre ces instructions.' }]
+        });
       }
 
       // Ajouter l'historique
-      if (conversationHistory.length > 0) {
-        fullPrompt += 'Historique de conversation:\n';
-        conversationHistory.forEach(msg => {
-          const role = msg.role === 'user' ? 'Utilisateur' : 'Assistant';
-          fullPrompt += `${role}: ${msg.content}\n`;
+      conversationHistory.forEach(msg => {
+        contents.push({
+          role: msg.role === 'user' ? 'user' : 'model',
+          parts: [{ text: msg.content }]
         });
-        fullPrompt += '\n';
+      });
+
+      // Ajouter le prompt actuel
+      contents.push({
+        role: 'user',
+        parts: [{ text: prompt }]
+      });
+
+      // Appel API REST v1
+      const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents,
+          generationConfig: {
+            temperature: 0.9,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 8192,
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`API Error: ${errorData.error?.message || response.statusText}`);
       }
 
-      fullPrompt += `Utilisateur: ${prompt}\nAssistant:`;
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-      // Génération
-      const result = await this.model.generateContent(fullPrompt);
-      const response = result.response;
-      const text = response.text();
-
-      // Usage tokens (estimation pour Gemini)
+      // Usage tokens
       const usage = {
-        inputTokens: Math.ceil(fullPrompt.length / 4),
-        outputTokens: Math.ceil(text.length / 4),
-        totalTokens: Math.ceil((fullPrompt.length + text.length) / 4)
+        inputTokens: data.usageMetadata?.promptTokenCount || 0,
+        outputTokens: data.usageMetadata?.candidatesTokenCount || 0,
+        totalTokens: data.usageMetadata?.totalTokenCount || 0
       };
 
       console.log('✅ [Gemini] Réponse générée', {
@@ -117,7 +129,7 @@ class GeminiService {
    * @returns {Promise<Object>} { success, content, usage, provider }
    */
   async analyzeImage(imageBase64, prompt = "Décris cette image en détail") {
-    if (!this.model) {
+    if (!this.apiKey) {
       return {
         success: false,
         error: 'Service Gemini non initialisé',
@@ -134,20 +146,46 @@ class GeminiService {
       // Préparer l'image pour Gemini
       const imagePart = {
         inlineData: {
-          data: imageBase64.split(',')[1] || imageBase64, // Supprimer le préfixe data:image/...
+          data: imageBase64.split(',')[1] || imageBase64,
           mimeType: 'image/jpeg'
         }
       };
 
-      // Génération avec vision
-      const result = await this.model.generateContent([prompt, imagePart]);
-      const response = result.response;
-      const text = response.text();
+      // Appel API REST v1 avec vision
+      const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            role: 'user',
+            parts: [
+              { text: prompt },
+              imagePart
+            ]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 32,
+            topP: 0.9,
+            maxOutputTokens: 4096,
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`API Error: ${errorData.error?.message || response.statusText}`);
+      }
+
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
       const usage = {
-        inputTokens: Math.ceil((prompt.length + imageBase64.length / 10) / 4),
-        outputTokens: Math.ceil(text.length / 4),
-        totalTokens: Math.ceil((prompt.length + imageBase64.length / 10 + text.length) / 4)
+        inputTokens: data.usageMetadata?.promptTokenCount || 0,
+        outputTokens: data.usageMetadata?.candidatesTokenCount || 0,
+        totalTokens: data.usageMetadata?.totalTokenCount || 0
       };
 
       console.log('✅ [Gemini Vision] Analyse terminée', {
@@ -178,7 +216,7 @@ class GeminiService {
    * @returns {boolean}
    */
   isAvailable() {
-    return this.model !== null;
+    return !!this.apiKey;
   }
 
   /**
@@ -188,7 +226,7 @@ class GeminiService {
   getModelInfo() {
     return {
       provider: 'gemini',
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-1.5-flash',
       capabilities: ['text', 'vision', 'streaming'],
       available: this.isAvailable()
     };

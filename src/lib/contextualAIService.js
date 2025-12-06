@@ -1,9 +1,9 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import Anthropic from '@anthropic-ai/sdk';
 
 /**
  * Service IA Contextuel avec multi-provider (Claude, Perplexity, Gemini)
  * Disponible partout dans l'application pour assistance en temps réel
+ * Gemini utilise l'API REST v1 directement
  */
 class ContextualAIService {
   constructor(apiKey) {
@@ -36,27 +36,15 @@ class ContextualAIService {
       this.perplexityKey = null;
     }
 
-    // Initialiser Gemini (fallback)
+    // Initialiser Gemini (fallback) - API REST v1
+    this.geminiApiKey = apiKey;
+    this.geminiModel = 'gemini-1.5-flash';
+    this.geminiApiUrl = `https://generativelanguage.googleapis.com/v1/models/${this.geminiModel}:generateContent`;
+    
     if (!apiKey) {
       console.warn('⚠️ [Contextual AI] Clé API Gemini manquante');
-      this.genAI = null;
     } else {
-      try {
-        this.genAI = new GoogleGenerativeAI(apiKey);
-        this.model = this.genAI.getGenerativeModel({ 
-          model: 'gemini-2.0-flash-exp',
-          generationConfig: {
-            temperature: 0.9,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 2048,
-          }
-        });
-        console.log('✅ [Contextual AI] Gemini initialisé (provider fallback)');
-      } catch (error) {
-        console.error('❌ [Contextual AI] Erreur initialisation Gemini:', error);
-        this.genAI = null;
-      }
+      console.log('✅ [Contextual AI] Gemini initialisé (fallback via API v1)');
     }
 
     this.chatSessions = new Map();
@@ -71,7 +59,7 @@ class ContextualAIService {
    * Vérifie si le service est disponible
    */
   isAvailable() {
-    return this.claude !== null || this.perplexityKey !== null || this.genAI !== null;
+    return this.claude !== null || this.perplexityKey !== null || this.geminiApiKey !== null;
   }
 
   /**
@@ -82,13 +70,40 @@ class ContextualAIService {
     // Si un provider préféré est spécifié et disponible
     if (preferredProvider === 'perplexity' && this.perplexityKey) return 'perplexity';
     if (preferredProvider === 'claude' && this.claude) return 'claude';
-    if (preferredProvider === 'gemini' && this.genAI) return 'gemini';
+    if (preferredProvider === 'gemini' && this.geminiApiKey) return 'gemini';
     
     // Sinon, priorité par défaut
     if (this.claude) return 'claude';
     if (this.perplexityKey) return 'perplexity';
-    if (this.genAI) return 'gemini';
+    if (this.geminiApiKey) return 'gemini';
     return null;
+  }
+
+  /**
+   * Helper pour appeler Gemini via API REST v1
+   */
+  async callGeminiAPI(prompt) {
+    const response = await fetch(`${this.geminiApiUrl}?key=${this.geminiApiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 2048,
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Gemini API Error: ${errorData.error?.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
   }
 
   /**
@@ -1140,11 +1155,10 @@ ${relatedChapters.length > 0 ? relatedChapters.map(ch => `- ID ${ch.id}: ${ch.ti
             let text = response.content[0].text.trim().replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
             adviceData = JSON.parse(text);
             console.log('✅ [Claude AI] Conseils générés (fallback)');
-          } else if (this.genAI) {
-            const result = await this.model.generateContent(prompt);
-            const response = await result.response;
-            let text = response.text().trim().replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-            adviceData = JSON.parse(text);
+          } else if (this.geminiApiKey) {
+            const text = await this.callGeminiAPI(prompt);
+            const cleanText = text.trim().replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+            adviceData = JSON.parse(cleanText);
             console.log('✅ [Gemini] Conseils générés (fallback)');
           } else {
             throw new Error('Aucun provider IA disponible');
@@ -1176,12 +1190,10 @@ ${relatedChapters.length > 0 ? relatedChapters.map(ch => `- ID ${ch.id}: ${ch.ti
           console.warn('⚠️ [Claude AI] Échec, basculement vers Gemini:', claudeError.message);
           
           // Fallback vers Gemini
-          if (this.genAI) {
-            const result = await this.model.generateContent(prompt);
-            const response = await result.response;
-            let text = response.text().trim();
-            text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-            adviceData = JSON.parse(text);
+          if (this.geminiApiKey) {
+            const text = await this.callGeminiAPI(prompt);
+            const cleanText = text.trim().replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+            adviceData = JSON.parse(cleanText);
             console.log('✅ [Gemini] Conseils générés (fallback)');
           } else {
             throw new Error('Aucun provider IA disponible');
@@ -1190,11 +1202,9 @@ ${relatedChapters.length > 0 ? relatedChapters.map(ch => `- ID ${ch.id}: ${ch.ti
       } else if (provider === 'gemini') {
         // Utiliser Gemini directement
         console.log('🔵 [Contextual AI] Utilisation de Gemini pour les conseils...');
-        const result = await this.model.generateContent(prompt);
-        const response = await result.response;
-        let text = response.text().trim();
-        text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-        adviceData = JSON.parse(text);
+        const text = await this.callGeminiAPI(prompt);
+        const cleanText = text.trim().replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        adviceData = JSON.parse(cleanText);
         console.log('✅ [Gemini] Conseils générés avec succès');
       }
 
