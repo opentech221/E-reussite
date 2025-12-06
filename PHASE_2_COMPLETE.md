@@ -1,7 +1,6 @@
 curl -X POST https://e-reussite.netlify.app/.netlify/functions/competition-reminders -H "Authorization: Bearer 797ec9e858ffc720d668ac26e37432b1815ec36d8780ef863b56445adb799360"# 🎉 PHASE 2 COMPLÈTE - Récapitulatif
 
 ## ✅ Fonctionnalités implémentées
-
 ### 1️⃣ Notifications Push
 - ✅ Service Worker (`public/sw.js`)
 - ✅ Service de notifications (`src/services/pushNotificationService.js`)

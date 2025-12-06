@@ -1,0 +1,1 @@
+@keyframes fadeIn{0%{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}.animate-fadeIn{animation:fadeIn .4s ease-out}.hover\:scale-102:hover{transform:scale(1.02)}.hover\:scale-105:hover{transform:scale(1.05)}.hover\:scale-110:hover{transform:scale(1.1)}
