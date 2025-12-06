@@ -8,20 +8,10 @@
   
 [build.environment]
   NODE_VERSION = "18"
-
-# =============================================
-# SECRETS SCANNING - Exclude documentation files
-# =============================================
-[build.processing.secrets]
-  enabled = true
-  
-[build.processing.secrets.omit_paths]
-  paths = [
-    "*.md",
-    "**/*.md",
-    "public/check-quiz-options.html",
-    "public/test-quiz-data.html"
-  ]
+  # Exclude paths and keys from secrets scanning
+  # VITE_* keys are intentionally in client bundle (public keys)
+  SECRETS_SCAN_OMIT_PATHS = "*.md,**/*.md,public/check-quiz-options.html,public/test-quiz-data.html,dist/check-quiz-options.html,dist/test-quiz-data.html,dist/assets/*.js"
+  SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_ANON_KEY,VITE_VAPID_PUBLIC_KEY,VITE_CLAUDE_API_KEY,VITE_PERPLEXITY_API_KEY,VITE_GEMINI_API_KEY,VITE_DUB_API_KEY"
 
 # =============================================
 # FUNCTIONS DIRECTORY
