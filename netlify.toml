@@ -10,6 +10,20 @@
   NODE_VERSION = "18"
 
 # =============================================
+# SECRETS SCANNING - Exclude documentation files
+# =============================================
+[build.processing.secrets]
+  enabled = true
+  
+[build.processing.secrets.omit_paths]
+  paths = [
+    "*.md",
+    "**/*.md",
+    "public/check-quiz-options.html",
+    "public/test-quiz-data.html"
+  ]
+
+# =============================================
 # FUNCTIONS DIRECTORY
 # =============================================
 [functions]
