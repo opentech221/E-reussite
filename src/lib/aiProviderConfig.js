@@ -7,7 +7,7 @@ export const AI_PROVIDERS = {
   GEMINI: {
     id: 'gemini',
     name: 'Google Gemini 2.0',
-    model: 'gemini-2.0-flash-exp',
+    model: 'gemini-1.5-pro',
     icon: '🔵',
     color: '#4285F4',
     capabilities: ['text', 'vision', 'streaming'],
