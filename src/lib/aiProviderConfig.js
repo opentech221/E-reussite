@@ -6,11 +6,11 @@
 export const AI_PROVIDERS = {
   GEMINI: {
     id: 'gemini',
-    name: 'Google Gemini Pro',
-    model: 'gemini-pro',
+    name: 'Google Gemini (Désactivé)',
+    model: 'disabled',
     icon: '🔵',
     color: '#4285F4',
-    capabilities: ['text', 'vision', 'streaming'],
+    capabilities: [],
     strengths: [
       'Analyse d\'images et OCR',
       'Détection d\'objets visuels',

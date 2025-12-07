@@ -36,16 +36,11 @@ class ContextualAIService {
       this.perplexityKey = null;
     }
 
-    // Initialiser Gemini (fallback) - API REST v1beta
-    this.geminiApiKey = apiKey;
-    this.geminiModel = 'gemini-pro';
-    this.geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${this.geminiModel}:generateContent`;
-    
-    if (!apiKey) {
-      console.warn('⚠️ [Contextual AI] Clé API Gemini manquante');
-    } else {
-      console.log('✅ [Contextual AI] Gemini initialisé (fallback via API v1beta)');
-    }
+    // Gemini désactivé (modèles dépréciés par Google)
+    this.geminiApiKey = null;
+    this.geminiModel = null;
+    this.geminiApiUrl = null;
+    console.warn('⚠️ [Contextual AI] Gemini désactivé - utilisation de Claude/Perplexity uniquement');
 
     this.chatSessions = new Map();
     this.conversationHistory = new Map();
