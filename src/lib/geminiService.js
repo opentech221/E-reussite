@@ -6,15 +6,15 @@
 class GeminiService {
   constructor() {
     this.apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    this.model = 'gemini-1.5-flash-latest';
-    this.apiUrl = `https://generativelanguage.googleapis.com/v1/models/${this.model}:generateContent`;
+    this.model = 'gemini-pro';
+    this.apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent`;
     
     if (!this.apiKey) {
       console.warn('⚠️ [Gemini] Clé API Gemini manquante');
       return;
     }
     
-    console.log('✅ [Gemini] Service initialisé (gemini-1.5-flash-latest via API v1)');
+    console.log('✅ [Gemini] Service initialisé (gemini-pro via API v1beta)');
   }
 
   /**
@@ -226,7 +226,7 @@ class GeminiService {
   getModelInfo() {
     return {
       provider: 'gemini',
-      model: 'gemini-1.5-flash-latest',
+      model: 'gemini-pro',
       capabilities: ['text', 'vision', 'streaming'],
       available: this.isAvailable()
     };

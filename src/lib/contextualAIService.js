@@ -36,15 +36,15 @@ class ContextualAIService {
       this.perplexityKey = null;
     }
 
-    // Initialiser Gemini (fallback) - API REST v1
+    // Initialiser Gemini (fallback) - API REST v1beta
     this.geminiApiKey = apiKey;
-    this.geminiModel = 'gemini-1.5-flash-latest';
-    this.geminiApiUrl = `https://generativelanguage.googleapis.com/v1/models/${this.geminiModel}:generateContent`;
+    this.geminiModel = 'gemini-pro';
+    this.geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${this.geminiModel}:generateContent`;
     
     if (!apiKey) {
       console.warn('⚠️ [Contextual AI] Clé API Gemini manquante');
     } else {
-      console.log('✅ [Contextual AI] Gemini initialisé (fallback via API v1)');
+      console.log('✅ [Contextual AI] Gemini initialisé (fallback via API v1beta)');
     }
 
     this.chatSessions = new Map();
