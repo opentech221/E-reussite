@@ -65,14 +65,14 @@ export const AI_PROVIDERS = {
 /**
  * Provider par défaut
  */
-export const DEFAULT_PROVIDER = 'claude';
+export const DEFAULT_PROVIDER = 'perplexity';
 
 /**
  * Obtenir la configuration d'un provider
  */
 export const getProviderConfig = (providerId) => {
   const upperProviderId = providerId?.toUpperCase();
-  return AI_PROVIDERS[upperProviderId] || AI_PROVIDERS.CLAUDE;
+  return AI_PROVIDERS[upperProviderId] || AI_PROVIDERS.PERPLEXITY;
 };
 
 /**
