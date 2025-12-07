@@ -9,7 +9,9 @@
 class PerplexityAIService {
   constructor() {
     this.apiKey = import.meta.env.VITE_PERPLEXITY_API_KEY;
-    this.baseURL = '/api/perplexity-search'; // Edge Function proxy
+    this.supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    this.baseURL = `${this.supabaseUrl}/functions/v1/perplexity-search`; // Edge Function Supabase
+    this.anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     this.model = 'sonar-pro';
     
     console.log('🟢 [Perplexity Service] Initialisé pour conversation');
@@ -69,21 +71,18 @@ class PerplexityAIService {
         content: prompt
       });
 
-      // Appel à l'API via Edge Function
+      // Appel à l'API via Edge Function Supabase
       const response = await fetch(this.baseURL, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.anonKey}`
         },
         body: JSON.stringify({
-          model: this.model,
-          messages: messages,
-          max_tokens: 2048,
-          temperature: 0.7,
-          // ⚠️ PAS de return_citations pour mode conversation
-          // ⚠️ PAS de return_images
-          // ⚠️ PAS de search_recency_filter
-          stream: false
+          query: prompt,
+          context: conversationHistory.length > 0 
+            ? conversationHistory.map(m => `${m.role}: ${m.content}`).join('\n') 
+            : undefined
         })
       });
 
@@ -95,19 +94,26 @@ class PerplexityAIService {
 
       const data = await response.json();
 
-      // Extraire le contenu de la réponse
-      const content = data.choices?.[0]?.message?.content || '';
+      // Extraire le contenu de la réponse de l'Edge Function
+      const content = data.answer || '';
+      const citations = data.citations || [];
 
       console.log('✅ [Perplexity] Réponse générée', {
-        contentLength: content.length
+        contentLength: content.length,
+        citationsCount: citations.length
       });
 
       return {
         success: true,
-        text: content,
-        model: this.model,
+        content: content, // Changé de 'text' à 'content' pour compatibilité
+        citations: citations,
+        model: data.model || this.model,
         provider: 'perplexity',
-        usage: data.usage || {}
+        usage: {
+          inputTokens: 0,
+          outputTokens: 0,
+          totalTokens: 0
+        }
       };
 
     } catch (error) {
