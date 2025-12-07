@@ -294,12 +294,11 @@ class RealtimeDataService {
         .select('*')
         .eq('user_id', userId)
         .order('completed_at', { ascending: false })
-        .limit(1)
-        .single();
+        .limit(1);
 
-      if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows
+      if (error) throw error;
 
-      if (!data) {
+      if (!data || data.length === 0) {
         return {
           hasCompleted: false,
           testDate: null,
@@ -307,10 +306,12 @@ class RealtimeDataService {
         };
       }
 
+      const testData = data[0];
+
       return {
         hasCompleted: true,
-        testDate: data.completed_at,
-        careers: data.preferred_careers || []
+        testDate: testData.completed_at,
+        careers: testData.preferred_careers || []
       };
     } catch (error) {
       console.error('❌ [RealtimeData] Erreur orientation:', error);

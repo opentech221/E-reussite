@@ -65,14 +65,14 @@ export const AI_PROVIDERS = {
 /**
  * Provider par défaut
  */
-export const DEFAULT_PROVIDER = 'gemini';
+export const DEFAULT_PROVIDER = 'claude';
 
 /**
  * Obtenir la configuration d'un provider
  */
 export const getProviderConfig = (providerId) => {
   const upperProviderId = providerId?.toUpperCase();
-  return AI_PROVIDERS[upperProviderId] || AI_PROVIDERS.GEMINI;
+  return AI_PROVIDERS[upperProviderId] || AI_PROVIDERS.CLAUDE;
 };
 
 /**
